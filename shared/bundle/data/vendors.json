@@ -1,0 +1,355 @@
+{
+  "Dropseed Native Plant Nursery": {
+    "name": "Dropseed Native Plant Nursery",
+    "short": "Dropseed",
+    "coords": [
+      38.400143,
+      -85.548903
+    ],
+    "storefront": true,
+    "shipsTo": [
+      "KY",
+      "OH",
+      "TN",
+      "MO",
+      "IN",
+      "IL",
+      "PA",
+      "VA",
+      "WV",
+      "MI"
+    ],
+    "shipsExcept": [
+      "tree",
+      "shrub"
+    ],
+    "confirmed": true,
+    "site": "https://dropseednursery.com/",
+    "location": "Goshen, KY",
+    "kind": "Retail nursery",
+    "region": "Oldham County, NE of Louisville",
+    "specialty": "KY, IN and OH natives grown from local strains: wildflowers, ferns, grasses, trees, shrubs and seed",
+    "notes": "Owner Margaret Shea (25+ years in ecology). 1205 S Buckeye Ln, Goshen KY. Retail hours in spring and fall (fall 2026: Fri–Sat 9am–4pm, Sept 4–Oct 31), and open by appointment year round. Ships seeds and potted plants to KY, OH, TN, MO, IN, IL, PA, VA, WV and MI. Does not ship trees or shrubs.",
+    "carriesCount": 100
+  },
+  "Ironweed Native Plant Nursery": {
+    "name": "Ironweed Native Plant Nursery",
+    "short": "Ironweed",
+    "coords": [
+      38.17329,
+      -85.06913
+    ],
+    "storefront": true,
+    "shipsTo": {
+      "allExcept": [
+        "AK",
+        "AZ",
+        "CA",
+        "CO",
+        "ID",
+        "ME",
+        "MA",
+        "MT",
+        "ND",
+        "NE",
+        "NH",
+        "NM",
+        "OR",
+        "RI",
+        "SD",
+        "TX",
+        "UT",
+        "WA",
+        "WY",
+        "VT"
+      ]
+    },
+    "confirmed": true,
+    "site": "https://www.ironweednursery.com/",
+    "location": "Waddy, KY",
+    "kind": "Retail nursery",
+    "region": "Shelby County, east of Louisville",
+    "specialty": "Natives grown from Kentucky sources; plants for caterpillars and hummingbirds",
+    "notes": "Woman- and minority-owned Kentucky nursery at 400 Waddy Road. In the cool season, visits are by appointment; text ahead. Regular hours return in March. It does not ship to Arizona, California, Colorado, Idaho, Montana, New Mexico, Oregon, Utah, Washington, Wyoming, Texas, North Dakota, South Dakota, Nebraska, Maine, Massachusetts, New Hampshire, Rhode Island, Vermont, Alaska, Hawaii or Canada. Orders need at least 8 plants, shipping is free, and orders go out early in the week. All sales final.",
+    "carriesCount": 47
+  },
+  "Roundstone Native Seed": {
+    "name": "Roundstone Native Seed",
+    "short": "Roundstone",
+    "coords": [
+      37.409107,
+      -86.002433
+    ],
+    "storefront": false,
+    "shipsTo": "contiguous-48",
+    "confirmed": true,
+    "site": "https://www.roundstoneseed.com/",
+    "location": "Upton, KY",
+    "kind": "Retail nursery",
+    "region": "Hardin County, central Kentucky",
+    "specialty": "Bulk native grass & wildflower seed and custom restoration mixes (not a container nursery)",
+    "notes": "Restoration-scale seed producer; also custom packaging, consulting, and seed cleaning. Some live seedling plugs. Online cart takes Visa/MC/Amex; $5.00 minimum per line item, and custom plug orders start at 2,000 plugs per species.",
+    "carriesCount": 52
+  },
+  "Direct Native Plants": {
+    "name": "Direct Native Plants",
+    "coords": null,
+    "storefront": false,
+    "shipsTo": "contiguous-48",
+    "confirmed": true,
+    "site": "https://directnativeplants.com/",
+    "location": "Mail-order (MD/IL)",
+    "kind": "Mail-order",
+    "region": "Nationwide (MD & IL fulfillment)",
+    "specialty": "Native trees, shrubs and perennials",
+    "notes": "Retail arm of American Native Plants wholesale. Ships by FedEx to the lower 48 states and DC, from Maryland for customers east of Ohio and from Illinois for those west of West Virginia. No pickup offered.",
+    "carriesCount": 86
+  },
+  "Camp Creek Native Plants": {
+    "name": "Camp Creek Native Plants",
+    "short": "Camp Creek",
+    "coords": [
+      34.518252,
+      -89.030319
+    ],
+    "storefront": true,
+    "shipsTo": "contiguous-48",
+    "confirmed": true,
+    "site": "https://www.campcreeknativeplants.com/",
+    "location": "New Albany, MS",
+    "kind": "Mail-order",
+    "region": "Southeastern US (Mississippi)",
+    "specialty": "Southeast natives & pollinator species; contract growing",
+    "notes": "921 Sam T. Barkley Dr., New Albany, MS; Mon–Sat 9–4, closed Sunday. Ships every Monday by UPS. Its site does not say which states it ships to. 1- and 3-gallon sizes are sold in the store only.",
+    "carriesCount": 105
+  },
+  "Prairie Moon Nursery": {
+    "name": "Prairie Moon Nursery",
+    "short": "Prairie Moon",
+    "coords": null,
+    "storefront": false,
+    "shipsTo": {
+      "allExcept": [
+        "CA"
+      ]
+    },
+    "confirmed": true,
+    "site": "https://www.prairiemoon.com/",
+    "location": "Winona, MN",
+    "kind": "Mail-order",
+    "region": "Nationwide; Midwest & Eastern US",
+    "specialty": "700+ native species as seed, bare-root & plugs",
+    "notes": "Online and phone orders only; no storefront. Plants cannot ship outside the contiguous US or to California; seed ships year-round, plants only in spring and fall.",
+    "carriesCount": 116
+  },
+  "Izel Native Plants": {
+    "name": "Izel Native Plants",
+    "short": "Izel",
+    "coords": null,
+    "storefront": false,
+    "shipsTo": [
+      "AL",
+      "AR",
+      "CT",
+      "DC",
+      "DE",
+      "GA",
+      "IA",
+      "IL",
+      "IN",
+      "KS",
+      "KY",
+      "MA",
+      "MD",
+      "ME",
+      "MI",
+      "MO",
+      "MN",
+      "MS",
+      "NC",
+      "ND",
+      "NE",
+      "NH",
+      "NJ",
+      "NY",
+      "OH",
+      "OK",
+      "PA",
+      "RI",
+      "SC",
+      "SD",
+      "TN",
+      "VA",
+      "VT",
+      "WI",
+      "WV"
+    ],
+    "confirmed": true,
+    "site": "https://www.izelplants.com/",
+    "location": "Mail-order (aggregator)",
+    "kind": "Aggregator",
+    "region": "Nationwide (Midwest to East Coast growers)",
+    "specialty": "Online marketplace selling 800+ native species and varieties from wholesale growers",
+    "notes": "An online marketplace selling plants from several wholesale growers, with no order minimum. Free shipping. Its site can filter to Kentucky natives.",
+    "carriesCount": 7
+  },
+  "Ancient Roots Native Nursery": {
+    "name": "Ancient Roots Native Nursery",
+    "short": "Ancient Roots",
+    "coords": [
+      38.123178,
+      -87.814388
+    ],
+    "storefront": true,
+    "shipsTo": "contiguous-48",
+    "confirmed": true,
+    "site": "https://www.ancientrootsnativenursery.com/",
+    "location": "Poseyville, IN",
+    "kind": "Retail nursery",
+    "region": "Southwestern Indiana / Ohio Valley",
+    "specialty": "Native trees, shrubs & perennials for the Ohio Valley",
+    "notes": "5801 Hwy 66, Poseyville, IN. Thu–Fri 12–4 and Sat 9–12 CST, Mon–Wed by appointment. Online catalogue with prices. Also ships, but its site does not say which states it ships to.",
+    "carriesCount": 10
+  },
+  "Talbott Nursery": {
+    "name": "Talbott Nursery",
+    "short": "Talbott",
+    "coords": [
+      30.919017,
+      -93.976427
+    ],
+    "storefront": true,
+    "shipsTo": "contiguous-48",
+    "confirmed": true,
+    "site": "http://www.talbottnurseryandpoultry.com/",
+    "location": "Jasper, TX",
+    "kind": "Mail-order",
+    "region": "Nationwide",
+    "specialty": "Native azaleas & rhododendrons (incl. R. maximum); also orchids & edibles",
+    "notes": "Texas nursery, 40+ years, at 1250 E. Gibson St., Jasper. Call Tue–Sat 10–4 to arrange a visit. Ships Mon–Wed and sometimes Sat, by UPS or USPS Priority (its site names both). Ships beyond the lower 48 states.",
+    "carriesCount": 1
+  },
+  "Louisville Native Plant Nursery": {
+    "name": "Louisville Native Plant Nursery",
+    "coords": [
+      38.1,
+      -85.58
+    ],
+    "storefront": true,
+    "shipsTo": [],
+    "confirmed": true,
+    "site": "https://louisvillenative.com/",
+    "location": "Louisville, KY",
+    "kind": "Retail nursery",
+    "region": "Jefferson County / Greater Louisville",
+    "specialty": "Native perennials, grasses, ferns and vines, with a focus on local strains",
+    "notes": "Run by one person, Tyler Lloyd. Order by Friday noon and pick up on Saturday, 9 AM–1 PM. No shopping on site and no shipping. Closed for the season; reopens April 2027.",
+    "carriesCount": 42
+  },
+  "Prairie Nursery": {
+    "name": "Prairie Nursery",
+    "coords": null,
+    "storefront": false,
+    "shipsTo": {
+      "allExcept": [
+        "ID",
+        "OR",
+        "UT"
+      ]
+    },
+    "confirmed": true,
+    "site": "https://www.prairienursery.com/",
+    "location": "Westfield, WI",
+    "kind": "Mail-order",
+    "region": "Nationwide; Upper Midwest focus",
+    "specialty": "Native wildflowers, grasses, sedges, ferns & shrubs; plants and seed",
+    "notes": "Wisconsin native-plant specialist since the 1970s. Mail order only; its only address is a P.O. Box. Ships the contiguous US except Idaho, Oregon and Utah, which it attributes to agricultural restrictions. Fall 2026 plant sales have ended; its site says to check back in December for spring. Seed ships year-round.",
+    "carriesCount": 88
+  },
+  "High Country Gardens": {
+    "name": "High Country Gardens",
+    "coords": null,
+    "storefront": false,
+    "shipsTo": "contiguous-48",
+    "confirmed": false,
+    "site": "https://www.highcountrygardens.com/",
+    "location": "Mail-order",
+    "kind": "Mail-order",
+    "region": "Nationwide",
+    "specialty": "Native and drought-tolerant perennials, grasses and shrubs",
+    "notes": "Ships plants to the lower 48 states.",
+    "carriesCount": 19
+  },
+  "Las Pilitas Nursery": {
+    "name": "Las Pilitas Nursery",
+    "coords": null,
+    "storefront": false,
+    "shipsTo": [
+      "AZ",
+      "CA",
+      "NM",
+      "NV",
+      "OR",
+      "UT",
+      "WA"
+    ],
+    "confirmed": false,
+    "site": "https://www.laspilitas.com/",
+    "location": "Santa Margarita, CA",
+    "kind": "Mail-order",
+    "region": "Western US",
+    "specialty": "California and western native plants",
+    "notes": "Ships plants to Arizona, California, Nevada, New Mexico, Oregon, Utah and Washington.",
+    "carriesCount": 6
+  },
+  "Native Gardeners": {
+    "name": "Native Gardeners",
+    "coords": null,
+    "storefront": false,
+    "shipsTo": [
+      "TX"
+    ],
+    "confirmed": true,
+    "site": "https://nativegardeners.com/",
+    "location": "Arlington, TX",
+    "kind": "Mail-order",
+    "region": "Texas",
+    "specialty": "Texas native plants, with a list for each Texas region, including the South Texas Plains, Edwards Plateau and Trans-Pecos",
+    "notes": "Nursery in Arlington, Texas, at 3300 W Division St, open daily 9am to 4pm. Ships live plants in pots from 4 inches to 25 gallons. Orders ship within 7 to 10 business days. Its site does not say which states it ships to, so only Texas is listed.",
+    "carriesCount": 77
+  },
+  "Nature Hills": {
+    "name": "Nature Hills",
+    "coords": null,
+    "storefront": false,
+    "shipsTo": {
+      "allExcept": [
+        "ID",
+        "MT"
+      ]
+    },
+    "confirmed": false,
+    "site": "https://naturehills.com/",
+    "location": "Mail-order",
+    "kind": "Mail-order",
+    "region": "Nationwide",
+    "specialty": "Trees, shrubs and perennials, including a native plant list by state",
+    "notes": "Ships plants to the lower 48 states except Idaho and Montana.",
+    "carriesCount": 38
+  },
+  "Garden for Wildlife": {
+    "name": "Garden for Wildlife",
+    "coords": null,
+    "storefront": false,
+    "shipsTo": "contiguous-48",
+    "affiliate": true,
+    "confirmed": true,
+    "site": "https://gardenforwildlife.com/",
+    "location": "Mail-order",
+    "kind": "Mail-order",
+    "region": "Nationwide (lower 48 states)",
+    "specialty": "Native wildflowers, grasses, shrubs and trees",
+    "notes": "Mail order only, to the lower 48 states. Some plants ship only to certain states, and the shop asks for your ZIP code before you buy one. Wildflowers and grasses come in sets of 3, 6 or 12 plants of one species. Shrubs and trees come in packs of 1, 2 or 4.",
+    "carriesCount": 65
+  }
+}

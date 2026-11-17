@@ -1,0 +1,341 @@
+{
+  "_about": "Garden jobs for the weekly newsletter. Each rule's window runs from `from` to `to`: an anchor (a date computed for each send group in send-groups.json) plus an offset in days. Lower `order` wins when more than four jobs are due. Rules sharing a `pair` are shown together. Every heading and fact is our own wording; sources supply facts only, except US federal works, which are public domain. Read by scripts/newsletter/rules.mjs.",
+  "rules": [
+    {
+      "id": "stems-tidy",
+      "heading": "Cut back dead stems for a tidy garden",
+      "categories": ["perennial"],
+      "from": { "anchor": "firstFall", "days": 0 },
+      "to": { "anchor": "lastSpring", "days": 0 },
+      "facts": [
+        "Any time between your first fall frost and your last spring frost, cut dead stems to 12–24 in.",
+        "Last season's stems are still empty. Cutting them does not harm nesting bees.",
+        "Leave the stubble up so bees can nest in it next growing season."
+      ],
+      "sources": [
+        {
+          "title": "NC State Extension AG-984, Garden Cleanup for Pollinators: Trim Perennial Stems in Their First Winter (2025)",
+          "url": "https://content.ces.ncsu.edu/garden-cleanup-for-pollinators-trim-perennial-stems-in-their-first-winter",
+          "license": "No license stated, treated as all rights reserved. Facts only, in our own words."
+        },
+        {
+          "title": "Xerces Society, Nesting and Overwintering Habitat for Pollinators and Other Beneficial Insects (2020)",
+          "url": "https://xerces.org/publications/fact-sheets/nesting-overwintering-habitat",
+          "license": "© 2020 The Xerces Society, all rights reserved. Facts only, in our own words."
+        }
+      ],
+      "pair": "stems",
+      "order": 10
+    },
+    {
+      "id": "stems-pollinator",
+      "heading": "Cut stems later for a pollinator-friendly garden",
+      "categories": ["perennial"],
+      "from": { "anchor": "highs50", "days": 0 },
+      "to": { "anchor": "highs50", "days": 27 },
+      "facts": [
+        "Leave stems and seed heads standing until daytime highs stay above 50°F.",
+        "Then cut stems to mixed heights of 8–24 in.",
+        "Leave the cuttings on the ground.",
+        "Both ways are the same for the plant because it is dormant and regrows from its roots."
+      ],
+      "sources": [
+        {
+          "title": "Xerces Society, Nesting and Overwintering Habitat for Pollinators and Other Beneficial Insects (2020)",
+          "url": "https://xerces.org/publications/fact-sheets/nesting-overwintering-habitat",
+          "license": "© 2020 The Xerces Society, all rights reserved. Facts only, in our own words."
+        },
+        {
+          "title": "Indiana Native Plant Society, Ecological Garden Maintenance",
+          "url": "https://indiananativeplants.org/ecological-garden-maintenance/",
+          "license": "© Indiana Native Plant Society, all rights reserved. Facts only, in our own words."
+        },
+        {
+          "title": "University of Maryland Extension, Waiting on Spring Garden Cleanup to Support Beneficial Insects (2024)",
+          "url": "https://marylandgrows.umd.edu/2024/04/15/waiting-on-spring-garden-cleanup-to-support-beneficial-insects/",
+          "license": "No license stated, treated as all rights reserved. Facts only, in our own words."
+        }
+      ],
+      "pair": "stems",
+      "order": 11
+    },
+    {
+      "id": "grasses-cut-back",
+      "heading": "Cut back last season's grasses",
+      "categories": ["grass"],
+      "from": { "anchor": "hardSpring", "days": -42 },
+      "to": { "anchor": "lastSpring", "days": -7 },
+      "facts": [
+        "Cut the old clumps down to a few inches before new green shoots start to grow."
+      ],
+      "sources": [
+        {
+          "title": "Clemson Cooperative Extension, Home and Garden Information Center, Ornamental Grasses",
+          "url": "https://hgic.clemson.edu/factsheet/ornamental-grasses/",
+          "license": "© Clemson University, all rights reserved. Facts only, in our own words."
+        },
+        {
+          "title": "Oregon State University Extension EM 9615, November Garden Calendar",
+          "url": "https://extension.oregonstate.edu/catalog/em-9615-november-garden-calendar",
+          "license": "© Oregon State University, all rights reserved. Facts only, in our own words."
+        }
+      ],
+      "order": 20
+    },
+    {
+      "id": "shrubs-vines-prune",
+      "heading": "Prune shrubs and vines by when they flower",
+      "categories": ["shrub", "vine"],
+      "from": { "anchor": "hardSpring", "days": -49 },
+      "to": { "anchor": "hardSpring", "days": -7 },
+      "facts": [
+        "Plants that flower in summer bloom on new growth. Prune them now before their buds open.",
+        "Plants that flower in spring already carry their buds. Wait until their flowers fade."
+      ],
+      "sources": [
+        {
+          "title": "USDA Home and Garden Bulletin 165, Pruning Ornamental Shrubs and Vines (1969)",
+          "url": "https://archive.org/details/pruningornamenta00unit",
+          "license": "Public domain (US federal work). Facts adapted in our own words."
+        },
+        {
+          "title": "USDA Forest Service, How to Prune Trees (NA-FR-01-95, revised 2012)",
+          "url": "https://research.fs.usda.gov/treesearch/12602",
+          "license": "Public domain (US federal work). Facts adapted in our own words."
+        }
+      ],
+      "order": 25
+    },
+    {
+      "id": "divide-fall-bloomers",
+      "heading": "Divide crowded fall-blooming perennials",
+      "categories": ["perennial"],
+      "from": { "anchor": "lastSpring", "days": -7 },
+      "to": { "anchor": "lastSpring", "days": 28 },
+      "facts": [
+        "Divide them around your last spring frost while they are not in flower."
+      ],
+      "sources": [
+        {
+          "title": "University of Minnesota Extension, Dividing Perennials",
+          "url": "https://extension.umn.edu/planting-and-growing-guides/dividing-perennials",
+          "license": "© Regents of the University of Minnesota, all rights reserved. Facts only, in our own words."
+        }
+      ],
+      "order": 30
+    },
+    {
+      "id": "divide-spring-summer-bloomers",
+      "heading": "Divide crowded perennials that flower in spring and summer",
+      "categories": ["perennial"],
+      "from": { "anchor": "firstFall", "days": -49 },
+      "to": { "anchor": "firstFall", "days": -14 },
+      "facts": [
+        "Divide them in the weeks before your first fall frost.",
+        "Finish four to six weeks before the ground freezes so the roots can settle in."
+      ],
+      "sources": [
+        {
+          "title": "University of Minnesota Extension, Dividing Perennials",
+          "url": "https://extension.umn.edu/planting-and-growing-guides/dividing-perennials",
+          "license": "© Regents of the University of Minnesota, all rights reserved. Facts only, in our own words."
+        }
+      ],
+      "order": 31
+    },
+    {
+      "id": "trees-prune",
+      "heading": "Prune trees while they are dormant",
+      "categories": ["tree"],
+      "from": { "anchor": "hardSpring", "days": -63 },
+      "to": { "anchor": "hardSpring", "days": -14 },
+      "facts": [
+        "Prune now while the trees are dormant.",
+        "Wait to prune trees that flower in early spring until their flowers fade.",
+        "Do not prune oaks in spring or early summer. Fresh cuts in those months draw the beetles that spread oak wilt."
+      ],
+      "sources": [
+        {
+          "title": "USDA Forest Service, How to Prune Trees (NA-FR-01-95, revised 2012)",
+          "url": "https://research.fs.usda.gov/treesearch/12602",
+          "license": "Public domain (US federal work). Facts adapted in our own words."
+        },
+        {
+          "title": "USDA Forest Service, Tree Owner's Manual (NA-FR-01-10, revised 2021)",
+          "url": "https://eec.ky.gov/Natural-Resources/Forestry/urban-forestry-and-community-programs/Documents/Tree%20Owners%20Manual%2020210505%20508%20Final.pdf",
+          "license": "US federal publication with no copyright notice, treated as public domain. Some co-authors are not federal employees. Facts adapted in our own words."
+        }
+      ],
+      "order": 35
+    },
+    {
+      "id": "plant-spring",
+      "heading": "Plant new natives",
+      "categories": ["tree", "shrub", "perennial", "grass", "fern", "vine", "groundcover"],
+      "from": { "anchor": "lastSpring", "days": -14 },
+      "to": { "anchor": "lastSpring", "days": 21 },
+      "facts": [
+        "The weeks around your last spring frost are a good time to set out new plants.",
+        "Water them regularly through their first growing season."
+      ],
+      "sources": [
+        {
+          "title": "Plant Virginia Natives, Gardening through the Seasons",
+          "url": "https://www.plantvirginianatives.org/gardening-through-the-seasons",
+          "license": "No license stated, treated as all rights reserved. Facts only, in our own words."
+        },
+        {
+          "title": "Utah State University Extension, Your April Gardening Guide",
+          "url": "https://extension.usu.edu/news/your-april-gardening-guide.php",
+          "license": "License not verified, treated as all rights reserved. Facts only, in our own words."
+        }
+      ],
+      "order": 40
+    },
+    {
+      "id": "plant-fall-woody",
+      "heading": "Plant trees and shrubs",
+      "categories": ["tree", "shrub"],
+      "from": { "anchor": "firstFall", "days": -63 },
+      "to": { "anchor": "firstFall", "days": 0 },
+      "facts": [
+        "Plant them before your first fall frost.",
+        "Keep watering them as needed until the ground freezes."
+      ],
+      "sources": [
+        {
+          "title": "Oregon State University Extension EM 9615, November Garden Calendar",
+          "url": "https://extension.oregonstate.edu/catalog/em-9615-november-garden-calendar",
+          "license": "© Oregon State University, all rights reserved. Facts only, in our own words."
+        },
+        {
+          "title": "Plant Virginia Natives, Gardening through the Seasons",
+          "url": "https://www.plantvirginianatives.org/gardening-through-the-seasons",
+          "license": "No license stated, treated as all rights reserved. Facts only, in our own words."
+        },
+        {
+          "title": "University of Wisconsin-Madison Extension, Chippewa County, A Few Fall Reminders for the Home Gardener (2025)",
+          "url": "https://chippewa.extension.wisc.edu/2025/10/07/a-few-fall-reminders-for-the-home-gardener",
+          "license": "© Board of Regents of the University of Wisconsin System, all rights reserved. Facts only, in our own words."
+        }
+      ],
+      "order": 41
+    },
+    {
+      "id": "leave-leaves",
+      "heading": "Leave fallen leaves in your beds",
+      "categories": ["tree", "shrub"],
+      "from": { "anchor": "firstFall", "days": 0 },
+      "to": { "anchor": "hardFall", "days": 28 },
+      "facts": [
+        "Rake leaves onto your beds and around shrubs instead of bagging them.",
+        "Many moths, butterflies and bumble bee queens winter in or under them.",
+        "Keep the leaves whole. Shredding them can kill the insects inside."
+      ],
+      "sources": [
+        {
+          "title": "Xerces Society, Leave the Leaves",
+          "url": "https://xerces.org/leave-the-leaves",
+          "license": "© The Xerces Society, all rights reserved. Facts only, in our own words."
+        },
+        {
+          "title": "Xerces Society, Nesting and Overwintering Habitat for Pollinators and Other Beneficial Insects (2020)",
+          "url": "https://xerces.org/publications/fact-sheets/nesting-overwintering-habitat",
+          "license": "© 2020 The Xerces Society, all rights reserved. Facts only, in our own words."
+        },
+        {
+          "title": "University of Maryland Extension, How to Protect Pollinators in the Fall (2024)",
+          "url": "https://marylandgrows.umd.edu/2024/08/23/how-to-protect-pollinators-in-the-fall/",
+          "license": "No license stated, treated as all rights reserved. Facts only, in our own words."
+        }
+      ],
+      "order": 45
+    },
+    {
+      "id": "sow-cold-seed",
+      "heading": "Sow native seed that needs a cold winter",
+      "categories": ["perennial", "grass"],
+      "from": { "anchor": "hardFall", "days": 0 },
+      "to": { "anchor": "hardFall", "days": 49 },
+      "facts": [
+        "Many native seeds need weeks of cold and damp weather before they will sprout.",
+        "Sow them outdoors after your first hard freeze. That way a warm spell does not sprout them too early."
+      ],
+      "sources": [
+        {
+          "title": "Xerces Society, Mid-Atlantic Native Meadows (2020)",
+          "url": "https://www.xerces.org/sites/default/files/publications/19-052_MidAtlantic_Meadow_guidelines_web.pdf",
+          "license": "© 2020 The Xerces Society, all rights reserved. Facts only, in our own words."
+        },
+        {
+          "title": "Plant Virginia Natives, Gardening through the Seasons",
+          "url": "https://www.plantvirginianatives.org/gardening-through-the-seasons",
+          "license": "No license stated, treated as all rights reserved. Facts only, in our own words."
+        }
+      ],
+      "order": 50
+    },
+    {
+      "id": "water-new-plants",
+      "heading": "Water new plants",
+      "categories": ["tree", "shrub", "perennial", "grass", "fern", "vine", "groundcover"],
+      "from": { "anchor": "lastSpring", "days": 42 },
+      "to": { "anchor": "firstFall", "days": -42 },
+      "facts": [
+        "New plants need regular water through their first growing season.",
+        "When rain is short, give them a deep soaking."
+      ],
+      "sources": [
+        {
+          "title": "Plant Virginia Natives, Gardening through the Seasons",
+          "url": "https://www.plantvirginianatives.org/gardening-through-the-seasons",
+          "license": "No license stated, treated as all rights reserved. Facts only, in our own words."
+        },
+        {
+          "title": "USDA NRCS, The PLANTS Database, Plant Guides",
+          "url": "https://plants.usda.gov",
+          "license": "Public domain: the PLANTS Database says its text is not copyrighted and is free for any use. Facts adapted in our own words."
+        }
+      ],
+      "order": 52
+    },
+    {
+      "id": "weed-before-seed",
+      "heading": "Pull weeds before they set seed",
+      "categories": ["perennial", "grass"],
+      "from": { "anchor": "lastSpring", "days": 28 },
+      "to": { "anchor": "firstFall", "days": -56 },
+      "facts": [
+        "Pulling weeds before their seeds ripen keeps them from spreading."
+      ],
+      "sources": [
+        {
+          "title": "Indiana Native Plant Society, Ecological Garden Maintenance",
+          "url": "https://indiananativeplants.org/ecological-garden-maintenance/",
+          "license": "© Indiana Native Plant Society, all rights reserved. Facts only, in our own words."
+        }
+      ],
+      "order": 55
+    },
+    {
+      "id": "meadow-first-year",
+      "heading": "Mow a new meadow when it gets tall",
+      "categories": ["perennial", "grass"],
+      "from": { "anchor": "lastSpring", "days": 21 },
+      "to": { "anchor": "firstFall", "days": -14 },
+      "facts": [
+        "Most of what shoots up tall in a meadow's first year is weeds.",
+        "Each time it reaches 12–18 in., mow it to about 8 in.",
+        "Stop mowing as your first fall frost nears."
+      ],
+      "sources": [
+        {
+          "title": "Xerces Society, Mid-Atlantic Native Meadows (2020)",
+          "url": "https://www.xerces.org/sites/default/files/publications/19-052_MidAtlantic_Meadow_guidelines_web.pdf",
+          "license": "© 2020 The Xerces Society, all rights reserved. Facts only, in our own words."
+        }
+      ],
+      "order": 60
+    }
+  ]
+}

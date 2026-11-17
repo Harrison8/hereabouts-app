@@ -1,0 +1,26 @@
+# The iPhone build. For now a placeholder that lists the files in the snapshot; it will be replaced by the build,
+# the screen tests, the screenshots and the TestFlight upload.
+# Runs on every snapshot pushed here (main and pr/<number>) and by hand. Never on outside contributions.
+name: iPhone app
+
+on:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  list:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: List the snapshot
+        run: find . -path ./.git -prune -o -type f -print | sort
