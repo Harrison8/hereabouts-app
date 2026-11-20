@@ -27,6 +27,7 @@ struct HereaboutsApp: App {
     var body: some Scene {
         WindowGroup {
             RootView()
+                .diagnosingTouchesForTests()
                 .capturingLinksForTests()
                 .modifier(RefreshWhenUseful(updater: updater, model: model))
                 .environment(model)

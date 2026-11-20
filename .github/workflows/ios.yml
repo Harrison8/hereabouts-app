@@ -116,6 +116,7 @@ jobs:
             exit 1
           fi
           echo "Testing on iPhone 17 ($udid)."
+          echo "UDID=$udid" >> "$GITHUB_ENV"
           echo "- iPhone 17, iOS 26: ran" >> "$GITHUB_STEP_SUMMARY"
           # "Use my location" is allowed before the tests start, so the screen test never waits on the phone's own
           # permission question, which the test machine is slow to show.
@@ -126,7 +127,32 @@ jobs:
             -project Hereabouts.xcodeproj -scheme Hereabouts \
             -destination "platform=iOS Simulator,id=$udid,arch=arm64" \
             -derivedDataPath "$DERIVED" \
-            -resultBundlePath "$RESULTS/ios26.xcresult"
+            -resultBundlePath "$RESULTS/ios26.xcresult" \
+            -skip-testing:HereaboutsUITests/RemindersSwitchDiagnosisTests
+
+      # Temporary: the reminders switch test in six ways, three times each, on the same iPhone 17. Its outcome does
+      # not fail the run; each test's "DIAG" lines go to the run's summary.
+      - name: Diagnosis of the reminders switch
+        if: ${{ !cancelled() && env.UDID != '' }}
+        continue-on-error: true
+        working-directory: ios
+        run: |
+          set -uo pipefail
+          udid="$UDID"
+          xcodebuild test-without-building \
+            -project Hereabouts.xcodeproj -scheme Hereabouts \
+            -destination "platform=iOS Simulator,id=$udid,arch=arm64" \
+            -derivedDataPath "$DERIVED" \
+            -resultBundlePath "$RESULTS/diagnosis.xcresult" \
+            -only-testing:HereaboutsUITests/RemindersSwitchDiagnosisTests \
+            -test-iterations 3 2>&1 | tee "$RUNNER_TEMP/diagnosis.log"
+          status=${PIPESTATUS[0]}
+          {
+            echo '~~~'
+            grep -E "DIAG |Test [Cc]ase .*RemindersSwitchDiagnosisTests.*(passed|failed)" "$RUNNER_TEMP/diagnosis.log"
+            echo '~~~'
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit "$status"
 
       # The lowest iOS the app supports, when this machine has an iOS 17 simulator. None is downloaded.
       - name: Screen tests on iOS 17, if this machine has it
@@ -187,6 +213,132 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: iphone-screenshots
+          path: ${{ runner.temp }}/screenshots
+          if-no-files-found: warn
+          retention-days: 14
+
+      # The app's own log from the iPhone 17 simulator: what the app wrote while the screen tests ran, which the test
+      # output does not carry.
+      - name: Take the app's log from the simulator
+        if: always()
+        run: |
+          set -uo pipefail
+          mkdir -p "$RUNNER_TEMP/applog"
+          if [ -z "${UDID:-}" ]; then echo "No simulator was used."; exit 0; fi
+          xcrun simctl spawn "$UDID" log show --last 90m --info --style compact \
+            --predicate 'process == "Hereabouts"' > "$RUNNER_TEMP/applog/hereabouts.log" 2>&1 || true
+          grep "HBDIAG" "$RUNNER_TEMP/applog/hereabouts.log" > "$RUNNER_TEMP/applog/hbdiag.log" || true
+          # The same lines found by their text, in case the process is named differently in the log.
+          xcrun simctl spawn "$UDID" log show --last 90m --info --style compact \
+            --predicate 'eventMessage CONTAINS "HBDIAG"' > "$RUNNER_TEMP/applog/hbdiag-by-text.log" 2>&1 || true
+          wc -l "$RUNNER_TEMP/applog/"*
+          gzip -f "$RUNNER_TEMP/applog/hereabouts.log"
+
+      - name: Save the app's log
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: iphone-app-log
+          path: ${{ runner.temp }}/applog
+          if-no-files-found: warn
+          retention-days: 14
+
+  # The Garden unit and screen tests on iOS 17, the lowest iOS the app supports. The macos-26 machine has no iOS 17
+  # simulator; the macos-14 machine has one, with Xcode 16.2. The project is made and built the same way as above,
+  # only with that Xcode.
+  ios17:
+    runs-on: macos-14
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Work folders
+        run: |
+          {
+            echo "DERIVED=$RUNNER_TEMP/derived"
+            echo "RESULTS=$RUNNER_TEMP/results"
+            echo "SHOTS=$RUNNER_TEMP/screenshots"
+          } >> "$GITHUB_ENV"
+
+      - name: Xcode 16.2 and simulators on this machine
+        run: |
+          sudo xcode-select -s /Applications/Xcode_16.2.app
+          xcodebuild -version
+          xcrun simctl list runtimes
+          xcrun simctl list devices available
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Make the Xcode project
+        working-directory: ios
+        run: xcodegen
+
+      - name: Build the app and its tests
+        working-directory: ios
+        run: |
+          set -o pipefail
+          xcodebuild build-for-testing -quiet \
+            -project Hereabouts.xcodeproj -scheme Hereabouts \
+            -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath "$DERIVED" \
+            CODE_SIGNING_ALLOWED=NO
+
+      - name: Garden tests on iOS 17
+        working-directory: ios
+        run: |
+          set -euo pipefail
+          runtime=$(xcrun simctl list runtimes -j | jq -r '
+            [.runtimes[] | select(.platform == "iOS" and .isAvailable and (.version | startswith("17.")))]
+              | sort_by(.version | split(".") | map(tonumber)) | last | .identifier // empty')
+          if [ -z "$runtime" ]; then
+            echo "::error::This machine has no iOS 17 simulator."
+            exit 1
+          fi
+          # An iPhone 15 runs iOS 17; newer models do not.
+          udid=$(xcrun simctl create "iPhone 15 (iOS 17)" com.apple.CoreSimulator.SimDeviceType.iPhone-15 "$runtime")
+          echo "Testing on iPhone 15, $runtime ($udid)."
+          echo "- iPhone 15, $runtime: Garden tests ran" >> "$GITHUB_STEP_SUMMARY"
+          xcrun simctl boot "$udid" 2>/dev/null || true
+          xcrun simctl bootstatus "$udid" -b
+          xcrun simctl install "$udid" "$DERIVED/Build/Products/Debug-iphonesimulator/Hereabouts.app"
+          xcrun simctl privacy "$udid" grant location garden.hereabouts.app || true
+          xcodebuild test-without-building \
+            -project Hereabouts.xcodeproj -scheme Hereabouts \
+            -destination "platform=iOS Simulator,id=$udid,arch=arm64" \
+            -derivedDataPath "$DERIVED" \
+            -resultBundlePath "$RESULTS/ios17.xcresult" \
+            -only-testing:HereaboutsTests/GardenUnitTests \
+            -only-testing:HereaboutsUITests/GardenTests
+
+      - name: Take the screenshots out of the results
+        if: always()
+        run: |
+          set -uo pipefail
+          mkdir -p "$SHOTS"
+          for r in "$RESULTS"/*.xcresult; do
+            [ -e "$r" ] || continue
+            run=$(basename "$r" .xcresult)
+            out="$SHOTS/$run"
+            mkdir -p "$out"
+            xcrun xcresulttool export attachments --path "$r" --output-path "$out" || continue
+            if [ -f "$out/manifest.json" ]; then
+              jq -r '.[] | .attachments[]? | [.exportedFileName, .suggestedHumanReadableName] | @tsv' "$out/manifest.json" |
+                while IFS=$'\t' read -r file nice; do
+                  nice=$(printf '%s' "$nice" | tr '":<>|*?' '_______')
+                  [ -n "$file" ] && [ -n "$nice" ] && [ -f "$out/$file" ] && mv "$out/$file" "$out/$run-$nice"
+                done
+            fi
+          done
+          find "$SHOTS" -type f | sort
+
+      - name: Save the screenshots
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: iphone-ios17-screenshots
           path: ${{ runner.temp }}/screenshots
           if-no-files-found: warn
           retention-days: 14

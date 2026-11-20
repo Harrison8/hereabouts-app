@@ -44,9 +44,13 @@ struct SavedGrid: View {
             VStack(spacing: 0) {
                 ForEach(Array(plants.enumerated()), id: \.element.id) { i, plant in
                     if i > 0 { Theme.rule.frame(height: 1) }
-                    SwipeToRemove(id: plant.id, openId: $openId, swiped: { swipes.mark() },
-                                  remove: { remove(plant.id) }, swipeable: swipeable) {
+                    if SwipeDiagnosis.noSwipe {
                         row(plant)
+                    } else {
+                        SwipeToRemove(id: plant.id, openId: $openId, swiped: { swipes.mark() },
+                                      remove: { remove(plant.id) }, swipeable: swipeable) {
+                            row(plant)
+                        }
                     }
                 }
             }
@@ -123,6 +127,19 @@ struct SavedGrid: View {
         .fixedSize(horizontal: false, vertical: true)
         .frame(maxWidth: .infinity, alignment: .leading)
     }
+}
+
+/// Temporary, for finding why the reminders switch sometimes ignores a tap. In a Debug build only: `-uiTestNoSwipe`
+/// lists the saved plants with no swipe at all, and `-uiTestTouchLog` writes where the swipe's pan is attached to the
+/// phone's log.
+enum SwipeDiagnosis {
+    #if DEBUG
+    static let noSwipe = ProcessInfo.processInfo.arguments.contains("-uiTestNoSwipe")
+    static let log = ProcessInfo.processInfo.arguments.contains("-uiTestTouchLog")
+    #else
+    static let noSwipe = false
+    static let log = false
+    #endif
 }
 
 /// When a sideways swipe last moved a saved plant's row. A class, so marking it does not redraw the rows.
@@ -320,12 +337,17 @@ private struct SidewaysPan: UIGestureRecognizerRepresentable {
         pan.delegate = context.coordinator
         context.coordinator.on = on
         pan.isEnabled = on
+        if SwipeDiagnosis.log { NSLog("%@", "HBDIAG pan \(pan.hash) made on=\(on)") }
         return pan
     }
 
     func updateUIGestureRecognizer(_ recognizer: UIPanGestureRecognizer, context: Context) {
         context.coordinator.on = on
         recognizer.isEnabled = on
+        if SwipeDiagnosis.log {
+            let view = recognizer.view.map { "\(type(of: $0)) \($0.frame) recognizers=\($0.gestureRecognizers?.count ?? 0)" } ?? "none"
+            NSLog("%@", "HBDIAG pan \(recognizer.hash) updated on=\(on) view=\(view)")
+        }
     }
 
     func handleUIGestureRecognizerAction(_ recognizer: UIPanGestureRecognizer, context: Context) {
@@ -352,7 +374,11 @@ private struct SidewaysPan: UIGestureRecognizerRepresentable {
         /// the row has a place on the screen, it takes nothing.
         func gestureRecognizer(_ recognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
             let rect = frame.rect
-            return on && !rect.isEmpty && rect.contains(touch.location(in: nil))
+            let take = on && !rect.isEmpty && rect.contains(touch.location(in: nil))
+            if SwipeDiagnosis.log {
+                NSLog("%@", "HBDIAG pan \(recognizer.hash) asked at=\(touch.location(in: nil)) row=\(rect) on=\(on) take=\(take)")
+            }
+            return take
         }
 
         /// Starts only when the finger moves more sideways than up or down.
