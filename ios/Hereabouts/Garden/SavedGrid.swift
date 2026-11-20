@@ -14,8 +14,8 @@ struct SavedGrid: View {
     let jobCount: (String) -> Int
     let open: (String) -> Void
     let remove: (String) -> Void
-    /// Whether the rows follow a sideways swipe. Off while another tab is showing, so the swipe's pan is not attached
-    /// anywhere while the user works on the Plants or Settings tab.
+    /// Whether the rows follow a sideways swipe. Off while another tab is showing or a plant page is open over the
+    /// list, so the swipe's pan is not attached anywhere while the person works on another screen.
     let swipeable: Bool
 
     @Environment(\.dynamicTypeSize) private var typeSize
@@ -154,6 +154,8 @@ private struct SwipeToRemove<Row: View>: View {
     /// Where the row sat when the current sideways swipe began; nil when no sideways swipe is under way.
     @State private var start: CGFloat?
     @State private var width: CGFloat = 0
+    /// Where the row is on the screen, so the swipe answers only a finger that starts on it.
+    @State private var frame = RowFrame()
 
     // A generic view cannot hold a stored static value, so the width is worked out each time it is asked for.
     private static var buttonWidth: CGFloat { 80 }
@@ -162,12 +164,13 @@ private struct SwipeToRemove<Row: View>: View {
         row()
             .background(Color.white)
             .offset(x: offset)
-            .modifier(SidewaysSwipe(on: swipeable, changed: changed, ended: ended))
+            .modifier(SidewaysSwipe(on: swipeable, frame: frame, changed: changed, ended: ended))
             .frame(maxWidth: .infinity)
             .background(alignment: .trailing) {
                 if offset < 0 { removeButton }
             }
             .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { width = $0 }
+            .onGeometryChange(for: CGRect.self) { $0.frame(in: .global) } action: { frame.rect = $0 }
             .onChange(of: openId) { _, now in
                 if now != id, start == nil, offset != 0 { withAnimation(.snappy) { offset = 0 } }
             }
@@ -180,7 +183,7 @@ private struct SwipeToRemove<Row: View>: View {
                 .foregroundStyle(Color.white)
                 .frame(width: max(Self.buttonWidth, -offset))
                 .frame(maxHeight: .infinity)
-                .background(Color(.systemRed))
+                .background(Theme.error)
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
@@ -198,18 +201,18 @@ private struct SwipeToRemove<Row: View>: View {
         offset = min(0, (start ?? 0) + dx)
     }
 
-    /// The finger lifted, or the phone called the swipe off, `dx` points from where it began.
-    private func ended(_ dx: CGFloat) {
+    /// The swipe stopped `dx` points from where it began: the finger lifted (`lifted`), or the phone called it off.
+    private func ended(_ dx: CGFloat, lifted: Bool) {
         guard let from = start else { return }
         swiped()
         start = nil
-        let end = min(0, from + dx)
-        if width > 0, -end > width * 0.55 {
+        switch SwipeEnd.settle(from: from, dx: dx, width: width, lifted: lifted) {
+        case .remove:
             removeNow()
-        } else if -end > 40 {
+        case .open:
             withAnimation(.snappy) { offset = -Self.buttonWidth }
             openId = id
-        } else {
+        case .shut:
             withAnimation(.snappy) { offset = 0 }
             if openId == id { openId = nil }
         }
@@ -222,50 +225,95 @@ private struct SwipeToRemove<Row: View>: View {
     }
 }
 
+/// Where a saved plant's row comes to rest when a sideways swipe stops.
+enum SwipeEnd: Equatable {
+    /// The plant is unsaved.
+    case remove
+    /// The row rests slid open, with the Remove button showing.
+    case open
+    /// The row slides shut.
+    case shut
+
+    /// `from` is where the row sat when the swipe began and `dx` how far the finger moved since, in points, negative
+    /// to the left; `width` is the row's width. A swipe past 55% of the row removes the plant, and one past 40 points
+    /// leaves the button showing. When the phone calls the swipe off (`lifted` is false: a call, an alert, a swipe
+    /// from the screen's edge), the row goes back to where it was and the plant is never removed.
+    static func settle(from: CGFloat, dx: CGFloat, width: CGFloat, lifted: Bool) -> SwipeEnd {
+        guard lifted else { return from < 0 ? .open : .shut }
+        let end = min(0, from + dx)
+        if width > 0, -end > width * 0.55 { return .remove }
+        return -end > 40 ? .open : .shut
+    }
+}
+
+/// Where a row is on the screen, in the window's points. A class, so updating it as the page scrolls does not redraw
+/// the row.
+private final class RowFrame {
+    var rect = CGRect.null
+}
+
 /// Follows a sideways swipe and leaves an up-or-down one to the page's scrolling. From iOS 18 a SwiftUI drag inside a
 /// scroll view keeps the page from scrolling, so there the swipe is UIKit's pan, which only starts when the finger
 /// moves more sideways than up or down. iOS 17 keeps SwiftUI's drag, which scrolls alongside.
 private struct SidewaysSwipe: ViewModifier {
-    /// When false, the iOS 18 pan is left off entirely. The iOS 17 drag runs alongside other gestures, so it stays.
+    /// When false, the iOS 18 pan is left off entirely. The iOS 17 drag belongs to the row alone, so it stays.
     let on: Bool
+    /// Where the row is on the screen. The iOS 18 pan ignores a finger that starts anywhere else.
+    let frame: RowFrame
     let changed: (CGFloat) -> Void
-    let ended: (CGFloat) -> Void
+    /// The swipe stopped this many points from where it began; true when the finger lifted, false when the phone
+    /// called the swipe off.
+    let ended: (CGFloat, Bool) -> Void
 
+    /// The current iOS 17 drag has gone sideways.
     @State private var sideways = false
+    /// True while any iOS 17 drag is under way. SwiftUI puts it back to false however the drag stops, including when
+    /// the phone calls it off, which onEnded never hears about.
+    @GestureState private var dragging = false
 
     func body(content: Content) -> some View {
         if #available(iOS 18.0, *) {
             if on {
-                content.gesture(SidewaysPan(changed: changed, ended: ended))
+                content.gesture(SidewaysPan(frame: frame, changed: changed, ended: ended))
             } else {
                 content
             }
         } else {
-            content.simultaneousGesture(
-                DragGesture(minimumDistance: 16)
-                    .onChanged { value in
-                        if !sideways {
-                            guard abs(value.translation.width) > abs(value.translation.height) else { return }
-                            sideways = true
+            content
+                .simultaneousGesture(
+                    DragGesture(minimumDistance: 16)
+                        .updating($dragging) { _, state, _ in state = true }
+                        .onChanged { value in
+                            if !sideways {
+                                guard abs(value.translation.width) > abs(value.translation.height) else { return }
+                                sideways = true
+                            }
+                            changed(value.translation.width)
                         }
-                        changed(value.translation.width)
-                    }
-                    .onEnded { value in
-                        guard sideways else { return }
-                        sideways = false
-                        ended(value.translation.width)
-                    }
-            )
+                        .onEnded { value in
+                            guard sideways else { return }
+                            sideways = false
+                            ended(value.translation.width, true)
+                        }
+                )
+                .onChange(of: dragging) { _, now in
+                    // A drag that stopped while still marked sideways was called off: onEnded clears the mark first
+                    // when the finger lifts.
+                    guard !now, sideways else { return }
+                    sideways = false
+                    ended(0, false)
+                }
         }
     }
 }
 
 @available(iOS 18.0, *)
 private struct SidewaysPan: UIGestureRecognizerRepresentable {
+    let frame: RowFrame
     let changed: (CGFloat) -> Void
-    let ended: (CGFloat) -> Void
+    let ended: (CGFloat, Bool) -> Void
 
-    func makeCoordinator(converter: CoordinateSpaceConverter) -> Coordinator { Coordinator() }
+    func makeCoordinator(converter: CoordinateSpaceConverter) -> Coordinator { Coordinator(frame: frame) }
 
     func makeUIGestureRecognizer(context: Context) -> UIPanGestureRecognizer {
         let pan = UIPanGestureRecognizer()
@@ -277,13 +325,26 @@ private struct SidewaysPan: UIGestureRecognizerRepresentable {
         let dx = recognizer.translation(in: recognizer.view).x
         switch recognizer.state {
         case .began, .changed: changed(dx)
-        case .ended, .cancelled, .failed: ended(dx)
+        case .ended: ended(dx, true)
+        // The phone called the swipe off: the row goes back and the plant is never removed.
+        case .cancelled, .failed: ended(dx, false)
         default: break
         }
     }
 
     @MainActor
     final class Coordinator: NSObject, UIGestureRecognizerDelegate {
+        let frame: RowFrame
+
+        init(frame: RowFrame) { self.frame = frame }
+
+        /// Takes only a finger that starts on its own row. SwiftUI may attach the pan to a view that holds more than
+        /// the row, so without this a swipe elsewhere on the screen could slide or remove the row.
+        func gestureRecognizer(_ recognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
+            let rect = frame.rect
+            return rect.isEmpty || rect.contains(touch.location(in: nil))
+        }
+
         /// Starts only when the finger moves more sideways than up or down.
         func gestureRecognizerShouldBegin(_ recognizer: UIGestureRecognizer) -> Bool {
             guard let pan = recognizer as? UIPanGestureRecognizer else { return true }

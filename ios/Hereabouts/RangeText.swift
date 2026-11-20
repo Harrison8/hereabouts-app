@@ -5,14 +5,16 @@
 // the words through here just before they are shown.
 //
 // Only real ranges change:
-// - An en dash with no space on either side, after a plain word or number: "6–12", "Mar–Apr", "2nd–3rd",
-//   "Slow–moderate". After a hyphenated word ("frost-and-fog–covered") it stays. A dash with a space on each side is a
-//   sentence dash and stays.
+// - A dash or a hyphen between two growth rates (slow, medium, moderate, fast, rapid): "Slow–moderate" and
+//   "Slow-moderate" both read "Slow to moderate".
+// - An en dash with no space on either side, between numbers, prices or month names: "6–12", "$16.95–$35.95",
+//   "2nd–3rd", "Mar–Apr". An en dash between other words ("Jack–in–the–Pulpit", "frost-and-fog–covered") stays as the
+//   data writes it. A dash with a space on each side is a sentence dash and stays.
 // - A hyphen between two numbers, with or without a dollar sign: "1.5-2.5", "$3.25-$6.50". Not when the numbers are
 //   part of a date or a longer code ("2026-11-20", "NA-FR-01-95"), and not when the hyphen joins a number to a word
 //   ("3-gallon", "1-Pack").
 // - A hyphen between two month names: "Oct-Nov", "April-May".
-// A hyphenated word such as "Slow-moderate" stays as the data writes it.
+// Any other hyphenated word, such as "Slow-spreading" or "Moderate-to-fast", stays as the data writes it.
 import Foundation
 
 enum RangeText {
@@ -32,8 +34,11 @@ enum RangeText {
     /// Each rule and what its match becomes. A regular expression is not changed after it is made, so sharing these
     /// between threads is safe.
     nonisolated(unsafe) private static let rules: [(NSRegularExpression, String)] = [
-        // The en dash: the word or number before it starts the text or follows a space, "(" or "~".
-        (#"(?<![^\s(~])([A-Za-z0-9.$]+)–(?=[A-Za-z0-9$~])"#, "$1 to "),
+        // Two growth rates joined by a hyphen or an en dash, in any case.
+        (#"(?i)\b(slow|medium|moderate|fast|rapid)[-–](slow|medium|moderate|fast|rapid)\b"#, "$1 to $2"),
+        // The en dash: a number, price or month name before it, which starts the text or follows a space, "(" or "~";
+        // a number, price, "~" or month name after it.
+        (#"(?<![^\s(~])(\$?\d[A-Za-z0-9.]*|(?:\#(months)))–(?=\$?\d|~|(?:\#(months))\b)"#, "$1 to "),
         // The hyphen between numbers: no letter, digit, point, hyphen or slash just before the first number, and no
         // further "-digit" after the second.
         (#"(?<![A-Za-z0-9.\-/])(\$?\d+(?:\.\d+)?)-(\$?\d+(?:\.\d+)?)(?![\d.]*-\d)(?!\d)"#, "$1 to $2"),
@@ -41,6 +46,6 @@ enum RangeText {
         (#"\b(\#(months))-(\#(months))\b"#, "$1 to $2"),
     ].map { pattern, template in
         // The patterns are fixed text, checked by the unit tests, so making them cannot fail.
-        (try!NSRegularExpression(pattern: pattern), template)
+        (try! NSRegularExpression(pattern: pattern), template)
     }
 }

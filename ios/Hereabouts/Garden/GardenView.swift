@@ -30,7 +30,7 @@ struct GardenView: View {
                                   jobCount: { id in week.rows.filter { $0.plantIds.contains(id) }.count },
                                   open: { self.model.gardenPath.append($0) },
                                   remove: { self.model.pressSave($0) },
-                                  swipeable: model.selectedTab == .garden)
+                                  swipeable: model.selectedTab == .garden && model.gardenPath.isEmpty)
                             .padding(.top, 32)
                     }
                 }

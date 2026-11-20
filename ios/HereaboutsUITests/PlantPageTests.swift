@@ -162,7 +162,7 @@ final class PlantPageTests: XCTestCase {
         XCTAssertTrue(flowers.label.contains("Mar to Apr"), "Spicebush's flowers read: \(flowers.label)")
         let growth = app.descendants(matching: .any)["fact-Growth"]
         XCTAssertTrue(growth.exists, "The plant page has no Growth fact")
-        XCTAssertTrue(growth.label.contains("Slow-moderate (about 1 to 1.5 ft a year); 6 to 12 ft in about 6 to 8 years; fruit in 3 to 6 years"),
+        XCTAssertTrue(growth.label.contains("Slow to moderate (about 1 to 1.5 ft a year); 6 to 12 ft in about 6 to 8 years; fruit in 3 to 6 years"),
                       "Spicebush's growth reads: \(growth.label)")
         for fact in [height, flowers, growth] {
             XCTAssertFalse(fact.label.contains("\u{2013}"), "A fact shows an en dash: \(fact.label)")

@@ -18,12 +18,29 @@ final class RangeTextUnitTests: XCTestCase {
         check("Mar\u{2013}May, Jul", "Mar to May, Jul")
         check("2\u{2013}3 years to full size", "2 to 3 years to full size")
         check("Slow-moderate (about 1\u{2013}1.5 ft a year); 6\u{2013}12 ft in about 6\u{2013}8 years; fruit in 3\u{2013}6 years",
-              "Slow-moderate (about 1 to 1.5 ft a year); 6 to 12 ft in about 6 to 8 years; fruit in 3 to 6 years")
+              "Slow to moderate (about 1 to 1.5 ft a year); 6 to 12 ft in about 6 to 8 years; fruit in 3 to 6 years")
         check("Any time between your first fall frost and your last spring frost, cut dead stems to 12\u{2013}24 in.",
               "Any time between your first fall frost and your last spring frost, cut dead stems to 12 to 24 in.")
         check("$16.95\u{2013}$35.95", "$16.95 to $35.95")
         check("berries by year 2nd\u{2013}3rd", "berries by year 2nd to 3rd")
+    }
+
+    func testTwoGrowthRatesReadToWhicheverDashJoinsThem() {
+        // The data writes the same growth rate both ways; the screen reads them the same.
         check("Slow\u{2013}moderate", "Slow to moderate")
+        check("Slow-moderate", "Slow to moderate")
+        check("Moderate\u{2013}rapid; a 2-in mat spreading 18 in.+; fills in 2\u{2013}3 years",
+              "Moderate to rapid; a 2-in mat spreading 18 in.+; fills in 2 to 3 years")
+        check("Moderate\u{2013}fast", "Moderate to fast")
+        check("Medium-fast from plug", "Medium to fast from plug")
+        check("Medium-slow; spreads to a 1.5\u{2013}2 ft colony over 3\u{2013}5 years",
+              "Medium to slow; spreads to a 1.5 to 2 ft colony over 3 to 5 years")
+    }
+
+    func testAnEnDashBetweenOtherWordsStays() {
+        // A plant's name from the website's list, and the days in a seller's opening hours.
+        check("Jack\u{2013}in\u{2013}the\u{2013}Pulpit", "Jack\u{2013}in\u{2013}the\u{2013}Pulpit")
+        check("Mon\u{2013}Sat", "Mon\u{2013}Sat")
     }
 
     func testAHyphenRangeReadsTo() {
@@ -50,7 +67,8 @@ final class RangeTextUnitTests: XCTestCase {
 
     func testWordsThatOnlyLookLikeRangesAreUnchanged() {
         // Hyphenated words and sizes.
-        check("Slow-moderate", "Slow-moderate")
+        check("Slow-spreading", "Slow-spreading")
+        check("fast-growing", "fast-growing")
         check("Moderate-to-fast grower", "Moderate-to-fast grower")
         check("3-gallon", "3-gallon")
         check("4-inch pot", "4-inch pot")
@@ -75,6 +93,6 @@ final class RangeTextUnitTests: XCTestCase {
         XCTAssertEqual(RangeText.display(Labels.ftRange([1.5, 2.5])), "1.5 to 2.5 ft")
         XCTAssertEqual(RangeText.display(Labels.bloomRange([3, 4]) ?? ""), "Mar to Apr")
         XCTAssertEqual(RangeText.display(Labels.growth("Slow-moderate (~1-1.5 ft/yr); 6-12 ft in ~6-8 yrs; fruit in 3-6 yrs") ?? ""),
-                       "Slow-moderate (about 1 to 1.5 ft a year); 6 to 12 ft in about 6 to 8 years; fruit in 3 to 6 years")
+                       "Slow to moderate (about 1 to 1.5 ft a year); 6 to 12 ft in about 6 to 8 years; fruit in 3 to 6 years")
     }
 }

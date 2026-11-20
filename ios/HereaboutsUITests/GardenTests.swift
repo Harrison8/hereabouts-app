@@ -1,7 +1,8 @@
 // The Garden tab, tapped through like a person: this week's jobs for the saved plants with their tick circles and the
 // "N of M done" line, the job sheet (when, what to do, the sources, which open in the phone's browser), the map pin
 // before the county, the saved plants with the red Remove button a swipe to the left shows (a long swipe removes the
-// plant at once, and pressing and holding opens no menu), the empty state, and the Saturday reminders the app plans.
+// plant at once, pressing and holding opens no menu, and swiping on a plant page opened from here removes nothing),
+// the empty state, and the Saturday reminders the app plans.
 //
 // The clock is set with -uiTestNow (local phone time), the saved plants with -uiTestSaved, and the phone's answer to
 // the notification question with -uiTestNotifications, so no system alert appears. The app reports the reminders it
@@ -66,6 +67,14 @@ final class GardenTests: XCTestCase {
         let start = row.coordinate(withNormalizedOffset: CGVector(dx: 0.9, dy: 0.5))
         start.press(forDuration: 0.05, thenDragTo: start.withOffset(CGVector(dx: -points, dy: 0)),
                     withVelocity: .slow, thenHoldForDuration: 0.2)
+    }
+
+    /// Drags a plant page's photo sideways, to the next photo, on the photo's own height (the top third of the screen).
+    @MainActor
+    private func swipePhotoLeft(_ app: XCUIApplication) {
+        let window = app.windows.firstMatch
+        window.coordinate(withNormalizedOffset: CGVector(dx: 0.85, dy: 0.3))
+            .press(forDuration: 0.05, thenDragTo: window.coordinate(withNormalizedOffset: CGVector(dx: 0.1, dy: 0.3)))
     }
 
     @MainActor
@@ -310,6 +319,37 @@ final class GardenTests: XCTestCase {
         XCTAssertTrue(StubServer.wait(10) { !row.exists }, "Remove did not unsave Spicebush")
         XCTAssertTrue(StubServer.wait(5) { count.label == "1 plant" }, "The count reads \(count.label) after Remove")
         XCTAssertTrue(element(app, "saved-asclepias-tuberosa").exists, "Remove took Butterfly Weed too")
+    }
+
+    /// Swiping through a plant's photos on its page, opened from the Garden tab, moves only the photos: both saved
+    /// plants are still saved when the page closes, and no Remove button shows.
+    @MainActor
+    func testSwipingThePhotosOfAPlantOpenedFromTheGardenKeepsEveryPlantSaved() throws {
+        let app = launch(now: "2027-11-18T09:00", saved: ["lindera-benzoin", "asclepias-tuberosa"])
+        let row = element(app, "saved-lindera-benzoin")
+        XCTAssertTrue(row.waitForExistence(timeout: 10), "Spicebush is not listed")
+        let count = element(app, "savedCount")
+        XCTAssertEqual(count.label, "2 plants")
+        reveal(app, row)
+        row.tap()
+        XCTAssertTrue(app.navigationBars["Spicebush"].waitForExistence(timeout: 10), "Tapping Spicebush did not open its page")
+
+        let counter = app.staticTexts["photoCounter"]
+        XCTAssertTrue(counter.waitForExistence(timeout: 10), "Spicebush's page has no photo counter")
+        XCTAssertEqual(counter.label, "In bloom \u{00B7} 1 of 3")
+        swipePhotoLeft(app)
+        XCTAssertTrue(StubServer.wait(5) { counter.label == "In fruit \u{00B7} 2 of 3" },
+                      "Swiping did not show the fruit photo: \(counter.label)")
+        swipePhotoLeft(app)
+        XCTAssertTrue(StubServer.wait(5) { counter.label == "In fall \u{00B7} 3 of 3" },
+                      "Swiping did not show the fall photo: \(counter.label)")
+
+        app.navigationBars.buttons.element(boundBy: 0).tap()
+        XCTAssertTrue(app.navigationBars["My garden"].waitForExistence(timeout: 10), "Could not go back to the Garden tab")
+        XCTAssertTrue(StubServer.wait(5) { count.label == "2 plants" }, "The count reads \(count.label) after swiping the photos")
+        XCTAssertTrue(element(app, "saved-lindera-benzoin").exists, "Swiping the photos unsaved Spicebush")
+        XCTAssertTrue(element(app, "saved-asclepias-tuberosa").exists, "Swiping the photos unsaved Butterfly Weed")
+        XCTAssertFalse(app.buttons["Remove"].exists, "A Remove button shows after swiping the photos")
     }
 
     /// A saved plant that is not native to a newly chosen county stays saved and stays listed: purple coneflower grows
