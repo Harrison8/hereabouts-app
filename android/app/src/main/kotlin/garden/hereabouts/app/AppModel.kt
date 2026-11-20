@@ -1,6 +1,6 @@
-// What the whole app shares: the plant and seller data, the location tables, the three things kept on the phone
-// (the county, the saved plants, this week's ticked jobs), and the services that send events and fetch photos.
-// Screens read it through its StateFlows.
+// What the whole app shares: the plant and seller data, the location tables, the four things kept on the phone (the
+// county, the saved plants, this week's ticked jobs and whether the Saturday reminders are on), and the services that
+// send events and fetch photos. Screens read it through its StateFlows.
 package garden.hereabouts.app
 
 import android.content.Context
@@ -63,6 +63,10 @@ class AppModel(
     private val _ticks: MutableStateFlow<Map<String, Set<String>>>
     /** Ticked jobs: week id (yyyymmdd of the week's Saturday) to rule ids. */
     val ticks: StateFlow<Map<String, Set<String>>>
+
+    private val _remindersOn = MutableStateFlow(RemindersStore.load(kept))
+    /** Whether the Saturday reminders are on: Settings' switch. On until turned off. */
+    val remindersOn: StateFlow<Boolean> = _remindersOn.asStateFlow()
 
     /** The write that forgets ticks from earlier weeks, when there were any. */
     val cleanup: Job?
@@ -147,6 +151,14 @@ class AppModel(
         val nextRules = if (ruleId in rules) rules - ruleId else rules + ruleId
         _ticks.value = if (nextRules.isEmpty()) _ticks.value - week else _ticks.value + (week to nextRules)
         return write { TicksStore.save(it, _ticks.value) }
+    }
+
+    // Reminders
+
+    /** Turns the Saturday reminders on or off. */
+    fun setRemindersOn(on: Boolean): Job {
+        _remindersOn.value = on
+        return write { RemindersStore.save(it, _remindersOn.value) }
     }
 
     companion object {

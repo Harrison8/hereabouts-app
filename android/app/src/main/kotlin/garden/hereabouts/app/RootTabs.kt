@@ -1,6 +1,7 @@
 // The three tabs at the bottom: Plants, Garden and Settings, with Material's navigation bar and icons. The top bar
 // shows the open tab's name in Young Serif. The app opens on Plants, and the open tab survives a screen rotation.
 // Until the Plants screen is built, the Plants tab lists the plant names from the data in use, one per line.
+// Settings' Change location and photo credits open as full pages over the tabs, and Back returns to Settings.
 @file:OptIn(ExperimentalMaterial3Api::class)
 
 package garden.hereabouts.app
@@ -32,6 +33,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
+import garden.hereabouts.app.settings.ChangeLocationPage
+import garden.hereabouts.app.settings.PhotoCreditsPage
+import garden.hereabouts.app.settings.SettingsScreen
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 enum class Tab(val title: String, val icon: ImageVector) {
@@ -40,9 +44,25 @@ enum class Tab(val title: String, val icon: ImageVector) {
     Settings("Settings", Icons.Outlined.Settings),
 }
 
+/** The pages Settings opens over the tabs. */
+private enum class Page { ChangeLocation, PhotoCredits }
+
 @Composable
 fun RootTabs(model: AppModel) {
     var open by rememberSaveable { mutableStateOf(Tab.Plants) }
+    var page by rememberSaveable { mutableStateOf<Page?>(null) }
+
+    when (page) {
+        Page.ChangeLocation -> {
+            ChangeLocationPage(model, onClose = { page = null })
+            return
+        }
+        Page.PhotoCredits -> {
+            PhotoCreditsPage(model, onBack = { page = null })
+            return
+        }
+        null -> {}
+    }
 
     Scaffold(
         containerColor = Brand.ground,
@@ -70,9 +90,17 @@ fun RootTabs(model: AppModel) {
             }
         },
     ) { padding ->
-        // Each tab's screen: for now the Plants tab lists plant names, and the others show only their title.
+        // Each tab's screen: for now the Plants tab lists plant names, and Garden shows only its title.
         Box(Modifier.fillMaxSize().padding(padding)) {
-            if (open == Tab.Plants) PlantNames(model)
+            when (open) {
+                Tab.Plants -> PlantNames(model)
+                Tab.Garden -> {}
+                Tab.Settings -> SettingsScreen(
+                    model,
+                    onChangeLocation = { page = Page.ChangeLocation },
+                    onPhotoCredits = { page = Page.PhotoCredits },
+                )
+            }
         }
     }
 }

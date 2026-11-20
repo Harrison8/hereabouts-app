@@ -10,6 +10,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.core.handlers.ReplaceFileCorruptionHandler
 import androidx.datastore.preferences.core.MutablePreferences
 import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
@@ -106,6 +107,17 @@ object SavedStore {
 
     fun save(into: MutablePreferences, ids: List<String>) {
         into[key] = buildJsonArray { ids.forEach { add(JsonPrimitive(it)) } }.toString()
+    }
+}
+
+/** Keeps whether the Saturday reminders are on, under the iPhone app's key. They are on until turned off. */
+object RemindersStore {
+    val key = booleanPreferencesKey("hereabouts.reminders")
+
+    fun load(kept: Preferences): Boolean = kept[key] ?: true
+
+    fun save(into: MutablePreferences, on: Boolean) {
+        into[key] = on
     }
 }
 

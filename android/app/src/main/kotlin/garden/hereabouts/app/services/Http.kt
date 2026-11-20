@@ -1,6 +1,6 @@
-// The app's two kinds of request, with Java's own HttpURLConnection (no networking library): a GET for data and
-// photos, and a POST of JSON for events. Each waits at most 30 seconds and never uses a cached answer. They block, so
-// callers run them on Dispatchers.IO.
+// The app's two kinds of request, with Java's own HttpURLConnection (no networking library): a GET for data, photos
+// and the Census address lookup, and a POST of JSON for events. Each waits at most 30 seconds unless the caller asks
+// for less, and never uses a cached answer. They block, so callers run them on Dispatchers.IO.
 package garden.hereabouts.app.services
 
 import java.net.HttpURLConnection
@@ -20,9 +20,12 @@ internal object Http {
         null
     }
 
-    /** GETs `url`. Null when no answer came: no signal on the way, a timeout, or an address that does not work. */
-    fun get(url: URL): Answer? {
-        val connection = open(url) ?: return null
+    /**
+     * GETs `url`, waiting at most `timeoutMs` to connect and then for each part of the answer. Null when no answer
+     * came: no signal on the way, a timeout, or an address that does not work.
+     */
+    fun get(url: URL, timeoutMs: Int = TIMEOUT_MS): Answer? {
+        val connection = open(url, timeoutMs) ?: return null
         return try {
             connection.requestMethod = "GET"
             val status = connection.responseCode
@@ -60,10 +63,10 @@ internal object Http {
         }
     }
 
-    private fun open(url: URL): HttpURLConnection? = try {
+    private fun open(url: URL, timeoutMs: Int = TIMEOUT_MS): HttpURLConnection? = try {
         (url.openConnection() as HttpURLConnection).apply {
-            connectTimeout = TIMEOUT_MS
-            readTimeout = TIMEOUT_MS
+            connectTimeout = timeoutMs
+            readTimeout = timeoutMs
             useCaches = false
         }
     } catch (e: Exception) {
