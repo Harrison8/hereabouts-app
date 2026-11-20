@@ -12,6 +12,10 @@ object TestSwitches {
     /** Under test, the address the services talk to (an http or https address), or null for none. */
     @Volatile
     var site: String? = null
+
+    /** Under test, the position "Use my location" finds (latitude, longitude), or null to ask the phone. */
+    @Volatile
+    var position: Pair<Double, Double>? = null
 }
 
 /** The address the services talk to in this build: the website, or under test what the tests chose. */
