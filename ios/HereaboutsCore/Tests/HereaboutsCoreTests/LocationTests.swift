@@ -109,6 +109,35 @@ final class LocationTests: XCTestCase {
         print("location.json: \(cases.count) cases (\(counts.sorted { $0.key < $1.key }.map { "\($0.key) \($0.value)" }.joined(separator: ", "))), \(failed) failed")
     }
 
+    /// expected/coverage.json: isServed and the coverage line, for one county in each state and the list's places.
+    func testCoverageLineMatchesTheWebsite() throws {
+        let tables = try loadTables()
+        let data = try AppData.load(from: Expected.bundleDir.appendingPathComponent("data"))
+        let cases = Expected.cases("coverage.json")
+        XCTAssertGreaterThan(cases.count, 40, "coverage.json has too few cases")
+        var servedSeen = Set<Bool>()
+        for (index, c) in cases.enumerated() {
+            guard let loc = location(c["location"]) else {
+                XCTFail("case \(index): no location")
+                continue
+            }
+            let served = LocationLookup.isServed(loc, served: data.served)
+            XCTAssertEqual(served, c["served"] as? Bool, "case \(index) (\(loc.countyName), \(loc.stateUsps)): isServed")
+            servedSeen.insert(served)
+            let n = data.plants.filter { LocationLookup.nativeHere($0.id, loc, geo: data.geo) }.count
+            XCTAssertEqual(Double(n), c["nativeCount"] as? Double, "case \(index) (\(loc.countyName)): native plants")
+            let line = LocationLookup.coverageLine(loc, nativeCount: n, served: data.served, ecoregionNames: tables.ecoregionNames)
+            XCTAssertEqual(line, c["result"] as? String, "case \(index) (\(loc.countyName), \(loc.stateUsps)): coverage line")
+        }
+        XCTAssertEqual(servedSeen, [true, false], "coverage.json should hold served and unserved counties")
+        // No county in the lower 48 has no native plant today, so the website's "None of our plants" line has no
+        // expected case; this is its text, from showLocation in index.html.
+        let louisville = Location(countyFips: "21111", countyName: "Jefferson County", stateFips: "21", stateName: "Kentucky",
+                                  stateUsps: "KY", ecoregion: "71", lat: nil, lon: nil)
+        XCTAssertEqual(LocationLookup.coverageLine(louisville, nativeCount: 0, served: data.served, ecoregionNames: ["71": "Interior Plateau"]),
+                       "None of our plants are recorded as native to Interior Plateau yet.")
+    }
+
     // MARK: - parts the expected file does not cover
 
     func testRoundPosition() {

@@ -43,7 +43,7 @@ struct ServiceSettings: Sendable {
 
     /// The settings for this launch: the website, and the app's own folders.
     ///
-    /// In a Debug build only, tests change this. Under a screen test (`-uiTestLocation`) or the in-app unit tests, the
+    /// In a Debug build only, tests change this. Under a screen test (`-uiTestLocation`, `-uiTestZip` or `-uiTestFirstOpen`) or the in-app unit tests, the
     /// services reach no address at all unless `-hereaboutsBaseURL <address>` names one, such as a stand-in server on
     /// 127.0.0.1, and they keep their files in folders of their own. Those folders are emptied at launch unless
     /// `-uiTestKeepFiles` is given, which a test uses to check what a relaunch finds. A Release build reads none of this.
@@ -77,9 +77,10 @@ struct ServiceSettings: Sendable {
     }
 
     #if DEBUG
-    /// Whether a test is running the app: a screen test launched it with a county, or the unit tests run inside it.
+    /// Whether a test is running the app: a screen test launched it with a county or on the first-open screen, or the unit tests run inside it.
     private static func underTest(arguments: [String]) -> Bool {
-        arguments.contains("-uiTestLocation") || NSClassFromString("XCTestCase") != nil
+        arguments.contains("-uiTestLocation") || arguments.contains("-uiTestZip") || arguments.contains("-uiTestFirstOpen")
+            || NSClassFromString("XCTestCase") != nil
             || ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
     }
 

@@ -17,7 +17,9 @@ final class ShellTests: XCTestCase {
             let button = tabBar.buttons[name]
             XCTAssertTrue(button.exists, "The tab bar has no \(name) button")
             button.tap()
-            XCTAssertTrue(app.navigationBars[name].waitForExistence(timeout: 10), "Tapping \(name) did not show its title")
+            // The Garden tab is titled "My garden", as the approved picture has it.
+            let title = name == "Garden" ? "My garden" : name
+            XCTAssertTrue(app.navigationBars[title].waitForExistence(timeout: 10), "Tapping \(name) did not show its title")
 
             let shot = XCTAttachment(screenshot: app.screenshot())
             shot.name = name

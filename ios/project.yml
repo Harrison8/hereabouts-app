@@ -80,6 +80,18 @@ targets:
     sources:
       - path: HereaboutsUITests
       - path: TestSupport
+      # The website's expected plant lists and the plant data, which the Plants screen tests compare the screen with.
+      # They go in the test bundle only, never in the app.
+      - path: ../shared/bundle/expected/list.json
+        buildPhase: resources
+      - path: ../shared/bundle/data/plants.json
+        buildPhase: resources
+      # The website's seller rows for each case, which the plant page tests compare the Where to buy panel with.
+      - path: ../shared/bundle/expected/sellers.json
+        buildPhase: resources
+      # The website's Saturday reminders for each case, which the Garden tests compare the waiting reminders with.
+      - path: ../shared/bundle/expected/care.json
+        buildPhase: resources
     dependencies:
       - target: Hereabouts
     settings:

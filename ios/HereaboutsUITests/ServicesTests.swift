@@ -56,7 +56,7 @@ final class ServicesTests: XCTestCase {
     func testANewerDataSetIsUsedAndKeptAfterRelaunch() throws {
         StubData.good.serve(from: server)
         let app = launchApp(freshStart: true)
-        XCTAssertTrue(app.staticTexts["Test Plant One"].waitForExistence(timeout: 30),
+        XCTAssertTrue(plantRow(app, "test-plant-one").waitForExistence(timeout: 30),
                       "The newer data set was not used. Requests: \(server.received.map(\.path))")
         attachScreenshot(app, "Newer data")
 
@@ -64,10 +64,10 @@ final class ServicesTests: XCTestCase {
         app.terminate()
         server.serveNothing()
         let again = launchApp(freshStart: false)
-        XCTAssertTrue(again.staticTexts["Test Plant One"].waitForExistence(timeout: 20),
+        XCTAssertTrue(plantRow(again, "test-plant-one").waitForExistence(timeout: 20),
                       "After a relaunch the app went back to the data it ships with")
-        XCTAssertTrue(again.staticTexts["Test Plant Two"].exists)
-        XCTAssertEqual(again.cells.count, 2, "The list should hold only the newer set's two plants")
+        XCTAssertTrue(plantRow(again, "test-plant-two").exists)
+        XCTAssertEqual(plantRows(again).count, 2, "The list should hold only the newer set's two plants")
         again.terminate()
     }
 
@@ -79,18 +79,30 @@ final class ServicesTests: XCTestCase {
                       "The app did not download all four files. Requests: \(server.received.map(\.path))")
         // Time to read and refuse the set.
         RunLoop.current.run(until: Date().addingTimeInterval(3))
-        XCTAssertFalse(app.staticTexts["Bad Data Plant"].exists, "The broken data set was used")
-        XCTAssertGreaterThan(app.cells.count, 2, "The app no longer lists the plants it ships with")
+        XCTAssertFalse(plantRow(app, "bad-data-plant").exists, "The broken data set was used")
+        XCTAssertGreaterThan(plantRows(app).count, 2, "The app no longer lists the plants it ships with")
         attachScreenshot(app, "Broken data ignored")
 
         // Nothing of the broken set was kept for the next launch.
         app.terminate()
         server.serveNothing()
         let again = launchApp(freshStart: false)
-        XCTAssertTrue(again.cells.firstMatch.waitForExistence(timeout: 20), "No plants listed after a relaunch")
-        XCTAssertFalse(again.staticTexts["Bad Data Plant"].exists, "The broken data set was kept")
-        XCTAssertGreaterThan(again.cells.count, 2, "The app no longer lists the plants it ships with")
+        XCTAssertTrue(plantRows(again).firstMatch.waitForExistence(timeout: 20), "No plants listed after a relaunch")
+        XCTAssertFalse(plantRow(again, "bad-data-plant").exists, "The broken data set was kept")
+        XCTAssertGreaterThan(plantRows(again).count, 2, "The app no longer lists the plants it ships with")
         again.terminate()
+    }
+
+    /// Every plant row on the Plants tab. Each row is marked "plant-<id>", whatever kind of element it is.
+    @MainActor
+    private func plantRows(_ app: XCUIApplication) -> XCUIElementQuery {
+        app.descendants(matching: .any).matching(NSPredicate(format: "identifier BEGINSWITH 'plant-'"))
+    }
+
+    /// The row of one plant, by its id.
+    @MainActor
+    private func plantRow(_ app: XCUIApplication, _ id: String) -> XCUIElement {
+        app.descendants(matching: .any)["plant-\(id)"]
     }
 
     @MainActor

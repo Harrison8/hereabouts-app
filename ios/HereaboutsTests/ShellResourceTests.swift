@@ -11,7 +11,8 @@ final class ShellResourceTests: XCTestCase {
     func testBrandFontsAreRegistered() {
         let figtree = UIFont.fontNames(forFamilyName: "Figtree")
         let young = UIFont.fontNames(forFamilyName: "Young Serif")
-        for name in [Theme.FontName.display, Theme.FontName.body, Theme.FontName.bodySemiBold] {
+        for name in [Theme.FontName.display, Theme.FontName.body, Theme.FontName.bodyMedium,
+                     Theme.FontName.bodySemiBold] {
             XCTAssertNotNil(UIFont(name: name, size: 17),
                             "\(name) is not registered. Figtree names: \(figtree). Young Serif names: \(young)")
         }

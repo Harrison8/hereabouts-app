@@ -489,6 +489,22 @@ public enum LocationLookup {
         return "We have \(n) plants for your area so far."
     }
 
+    /// isServed: whether the site serves the county's ecoregion (plant-regions.json `served`).
+    public static func isServed(_ loc: Location, served: [String]) -> Bool {
+        served.contains(loc.ecoregion)
+    }
+
+    /// The line above the plant list once a county is chosen, as showLocation in index.html picks it: the "None of
+    /// our plants" line when no plant is native there, else coverageText. Empty when no line shows.
+    /// `nativeCount` counts the plants native to the county, with no filter.
+    public static func coverageLine(_ loc: Location, nativeCount: Int, served: [String], ecoregionNames: [String: String]) -> String {
+        if nativeCount == 0 {
+            // A missing name reads "undefined" on the website; no ecoregion the tables hold lacks one.
+            return "None of our plants are recorded as native to \(ecoregionNames[loc.ecoregion] ?? "undefined") yet."
+        }
+        return coverageText(nativeCount, served: isServed(loc, served: served))
+    }
+
     /// roundTo2 in location.js (roundPosition in app-logic.mjs): Math.round(x * 100) / 100, two decimals (about 1 km),
     /// so a saved position cannot point at a house. Math.round sends halves up, toward +infinity.
     public static func roundPosition(_ x: Double) -> Double {

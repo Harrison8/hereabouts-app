@@ -117,6 +117,11 @@ jobs:
           fi
           echo "Testing on iPhone 17 ($udid)."
           echo "- iPhone 17, iOS 26: ran" >> "$GITHUB_STEP_SUMMARY"
+          # "Use my location" is allowed before the tests start, so the screen test never waits on the phone's own
+          # permission question, which the test machine is slow to show.
+          xcrun simctl boot "$udid" 2>/dev/null || true
+          xcrun simctl install "$udid" "$DERIVED/Build/Products/Debug-iphonesimulator/Hereabouts.app"
+          xcrun simctl privacy "$udid" grant location garden.hereabouts.app || true
           xcodebuild test-without-building \
             -project Hereabouts.xcodeproj -scheme Hereabouts \
             -destination "platform=iOS Simulator,id=$udid,arch=arm64" \
@@ -145,6 +150,9 @@ jobs:
           name=$(xcrun simctl list devices -j | jq -r --arg u "$udid" '[.devices[][] | select(.udid == $u)] | first | .name')
           echo "Testing on $name, $runtime ($udid)."
           echo "- $name, $runtime: ran" >> "$GITHUB_STEP_SUMMARY"
+          xcrun simctl boot "$udid" 2>/dev/null || true
+          xcrun simctl install "$udid" "$DERIVED/Build/Products/Debug-iphonesimulator/Hereabouts.app"
+          xcrun simctl privacy "$udid" grant location garden.hereabouts.app || true
           xcodebuild test-without-building \
             -project Hereabouts.xcodeproj -scheme Hereabouts \
             -destination "platform=iOS Simulator,id=$udid,arch=arm64" \
@@ -166,6 +174,8 @@ jobs:
             if [ -f "$out/manifest.json" ]; then
               jq -r '.[] | .attachments[]? | [.exportedFileName, .suggestedHumanReadableName] | @tsv' "$out/manifest.json" |
                 while IFS=$'\t' read -r file nice; do
+                  # The upload refuses names with " : < > | * ? in them, which a failed test's notes carry.
+                  nice=$(printf '%s' "$nice" | tr '":<>|*?' '_______')
                   [ -n "$file" ] && [ -n "$nice" ] && [ -f "$out/$file" ] && mv "$out/$file" "$out/$run-$nice"
                 done
             fi
