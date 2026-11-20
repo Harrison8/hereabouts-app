@@ -131,7 +131,8 @@ private struct SwipeToRemove<Row: View>: View {
     @State private var start: CGFloat?
     @State private var width: CGFloat = 0
 
-    private static let buttonWidth: CGFloat = 80
+    // A generic view cannot hold a stored static value, so the width is worked out each time it is asked for.
+    private static var buttonWidth: CGFloat { 80 }
 
     var body: some View {
         row()
