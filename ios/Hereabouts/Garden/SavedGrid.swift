@@ -5,6 +5,7 @@
 // "Remove". A plant that is not native to the county chosen now stays here until it is removed.
 import HereaboutsCore
 import SwiftUI
+import UIKit
 
 struct SavedGrid: View {
     let plants: [Plant]
@@ -138,7 +139,7 @@ private struct SwipeToRemove<Row: View>: View {
         row()
             .background(Color.white)
             .offset(x: offset)
-            .simultaneousGesture(swipe)
+            .modifier(SidewaysSwipe(changed: changed, ended: ended))
             .frame(maxWidth: .infinity)
             .background(alignment: .trailing) {
                 if offset < 0 { removeButton }
@@ -164,36 +165,105 @@ private struct SwipeToRemove<Row: View>: View {
         .accessibilityIdentifier("remove-\(id)")
     }
 
-    private var swipe: some Gesture {
-        DragGesture(minimumDistance: 16)
-            .onChanged { value in
-                let dx = value.translation.width
-                if start == nil {
-                    guard abs(dx) > abs(value.translation.height) else { return }
-                    start = offset
-                    if openId != id { openId = id }
-                }
-                offset = min(0, (start ?? 0) + dx)
-            }
-            .onEnded { value in
-                guard let from = start else { return }
-                start = nil
-                let end = min(0, from + value.translation.width)
-                if width > 0, -end > width * 0.55 {
-                    removeNow()
-                } else if -end > 40 {
-                    withAnimation(.snappy) { offset = -Self.buttonWidth }
-                    openId = id
-                } else {
-                    withAnimation(.snappy) { offset = 0 }
-                    if openId == id { openId = nil }
-                }
-            }
+    /// The finger has moved `dx` points sideways since the swipe began.
+    private func changed(_ dx: CGFloat) {
+        if start == nil {
+            start = offset
+            if openId != id { openId = id }
+        }
+        offset = min(0, (start ?? 0) + dx)
+    }
+
+    /// The finger lifted, or the phone called the swipe off, `dx` points from where it began.
+    private func ended(_ dx: CGFloat) {
+        guard let from = start else { return }
+        start = nil
+        let end = min(0, from + dx)
+        if width > 0, -end > width * 0.55 {
+            removeNow()
+        } else if -end > 40 {
+            withAnimation(.snappy) { offset = -Self.buttonWidth }
+            openId = id
+        } else {
+            withAnimation(.snappy) { offset = 0 }
+            if openId == id { openId = nil }
+        }
     }
 
     private func removeNow() {
         withAnimation(.snappy) { offset = -max(width, Self.buttonWidth) }
         if openId == id { openId = nil }
         remove()
+    }
+}
+
+/// Follows a sideways swipe and leaves an up-or-down one to the page's scrolling. From iOS 18 a SwiftUI drag inside a
+/// scroll view keeps the page from scrolling, so there the swipe is UIKit's pan, which only starts when the finger
+/// moves more sideways than up or down. iOS 17 keeps SwiftUI's drag, which scrolls alongside.
+private struct SidewaysSwipe: ViewModifier {
+    let changed: (CGFloat) -> Void
+    let ended: (CGFloat) -> Void
+
+    @State private var sideways = false
+
+    func body(content: Content) -> some View {
+        if #available(iOS 18.0, *) {
+            content.gesture(SidewaysPan(changed: changed, ended: ended))
+        } else {
+            content.simultaneousGesture(
+                DragGesture(minimumDistance: 16)
+                    .onChanged { value in
+                        if !sideways {
+                            guard abs(value.translation.width) > abs(value.translation.height) else { return }
+                            sideways = true
+                        }
+                        changed(value.translation.width)
+                    }
+                    .onEnded { value in
+                        guard sideways else { return }
+                        sideways = false
+                        ended(value.translation.width)
+                    }
+            )
+        }
+    }
+}
+
+@available(iOS 18.0, *)
+private struct SidewaysPan: UIGestureRecognizerRepresentable {
+    let changed: (CGFloat) -> Void
+    let ended: (CGFloat) -> Void
+
+    func makeCoordinator(converter: CoordinateSpaceConverter) -> Coordinator { Coordinator() }
+
+    func makeUIGestureRecognizer(context: Context) -> UIPanGestureRecognizer {
+        let pan = UIPanGestureRecognizer()
+        pan.delegate = context.coordinator
+        return pan
+    }
+
+    func handleUIGestureRecognizerAction(_ recognizer: UIPanGestureRecognizer, context: Context) {
+        let dx = recognizer.translation(in: recognizer.view).x
+        switch recognizer.state {
+        case .began, .changed: changed(dx)
+        case .ended, .cancelled, .failed: ended(dx)
+        default: break
+        }
+    }
+
+    @MainActor
+    final class Coordinator: NSObject, UIGestureRecognizerDelegate {
+        /// Starts only when the finger moves more sideways than up or down.
+        func gestureRecognizerShouldBegin(_ recognizer: UIGestureRecognizer) -> Bool {
+            guard let pan = recognizer as? UIPanGestureRecognizer else { return true }
+            let speed = pan.velocity(in: pan.view)
+            return abs(speed.x) > abs(speed.y)
+        }
+
+        /// The page's scrolling may run alongside, so neither cancels the other.
+        func gestureRecognizer(_ recognizer: UIGestureRecognizer,
+                               shouldRecognizeSimultaneouslyWith other: UIGestureRecognizer) -> Bool {
+            true
+        }
     }
 }
