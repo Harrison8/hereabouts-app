@@ -140,6 +140,9 @@ final class PlantsTests: XCTestCase {
         attachScreenshot(app, "Plants, Fairfax County")
         XCTAssertTrue(app.buttons["plantsCounty"].exists, "The county under the title is not there")
         XCTAssertEqual(app.buttons["plantsCounty"].label, "Fairfax County, Virginia")
+        let pin = app.descendants(matching: .any)["county-pin"]
+        XCTAssertTrue(pin.exists, "No map pin before the county")
+        XCTAssertLessThanOrEqual(pin.frame.maxX, app.buttons["plantsCounty"].frame.minX + 1, "The map pin is not before the county")
         XCTAssertFalse(app.staticTexts["offlineBanner"].exists, "The no-signal banner shows with signal")
         XCTAssertEqual(shownIds(app, count: 10), Array(ids(expected).prefix(10)))
 
@@ -323,8 +326,29 @@ final class PlantsTests: XCTestCase {
         let banner = app.staticTexts["offlineBanner"]
         XCTAssertTrue(banner.waitForExistence(timeout: 10), "No banner with no signal")
         XCTAssertEqual(banner.label, "No signal. Every plant and photo still works. Seller links open once you have signal again.")
+        let icon = app.descendants(matching: .any)["no-signal-icon"]
+        XCTAssertTrue(icon.exists, "No no-signal icon at the start of the banner")
+        XCTAssertLessThanOrEqual(icon.frame.maxX, banner.frame.minX + 1, "The no-signal icon is not before the words")
         XCTAssertGreaterThan(plantRows(app).count, 2, "The list is empty with no signal")
         attachScreenshot(app, "Plants, no signal")
+    }
+
+    /// A height in the list reads with "to", not a dash: Butterfly Weed is "1.5 to 2.5 ft", and no row on screen
+    /// shows an en dash.
+    @MainActor
+    func testHeightsInTheListReadTo() throws {
+        let app = launch()
+        XCTAssertGreaterThan(plantRows(app).count, 2, "The list is empty")
+        for label in plantRows(app).allElementsBoundByIndex.map(\.label) {
+            XCTAssertFalse(label.contains("\u{2013}"), "A row shows an en dash: \(label)")
+        }
+        let field = app.searchFields.firstMatch
+        XCTAssertTrue(field.waitForExistence(timeout: 10), "No search field")
+        field.tap()
+        field.typeText("Butterfly Weed")
+        let row = app.descendants(matching: .any)["plant-asclepias-tuberosa"]
+        XCTAssertTrue(row.waitForExistence(timeout: 10), "No row for Butterfly Weed")
+        XCTAssertTrue(row.label.hasSuffix("1.5 to 2.5 ft"), "Butterfly Weed's row reads: \(row.label)")
     }
 
     /// At the largest text size every row still has its save button in reach, and the panel opens.

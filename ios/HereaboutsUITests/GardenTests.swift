@@ -1,6 +1,7 @@
 // The Garden tab, tapped through like a person: this week's jobs for the saved plants with their tick circles and the
-// "N of M done" line, the job sheet (when, what to do, the sources, which open in the phone's browser), the saved
-// plants with their long-press "Remove", the empty state, and the Saturday reminders the app plans.
+// "N of M done" line, the job sheet (when, what to do, the sources, which open in the phone's browser), the map pin
+// before the county, the saved plants with the red Remove button a swipe to the left shows (a long swipe removes the
+// plant at once, and pressing and holding opens no menu), the empty state, and the Saturday reminders the app plans.
 //
 // The clock is set with -uiTestNow (local phone time), the saved plants with -uiTestSaved, and the phone's answer to
 // the notification question with -uiTestNotifications, so no system alert appears. The app reports the reminders it
@@ -56,6 +57,15 @@ final class GardenTests: XCTestCase {
     @MainActor
     private func reveal(_ app: XCUIApplication, _ target: XCUIElement) {
         for _ in 0..<8 where !(target.exists && target.isHittable) { app.swipeUp() }
+    }
+
+    /// Drags a saved plant's row to the left by `points`, from near its right edge, slowly, and holds a moment before
+    /// letting go, so the row stops where the finger stopped instead of being flung.
+    @MainActor
+    private func dragLeft(_ row: XCUIElement, by points: CGFloat) {
+        let start = row.coordinate(withNormalizedOffset: CGVector(dx: 0.9, dy: 0.5))
+        start.press(forDuration: 0.05, thenDragTo: start.withOffset(CGVector(dx: -points, dy: 0)),
+                    withVelocity: .slow, thenHoldForDuration: 0.2)
     }
 
     @MainActor
@@ -242,6 +252,11 @@ final class GardenTests: XCTestCase {
         XCTAssertTrue(StubServer.wait(20) { self.latestWaiting == expected },
                       "Waiting reminders differ from care.json.\nApp: \(latestWaiting ?? [])\nWebsite: \(expected)")
         XCTAssertTrue(element(app, "saved-quercus-alba").waitForExistence(timeout: 5), "The saved plants are not listed")
+        // The map pin sits before the county under the title, as d1-my-garden.png draws it.
+        let pin = element(app, "county-pin")
+        XCTAssertTrue(pin.exists, "No map pin before the county")
+        XCTAssertLessThanOrEqual(pin.frame.maxX, app.staticTexts["gardenCounty"].frame.minX + 1, "The map pin is not before the county")
+        XCTAssertEqual(app.staticTexts["gardenCounty"].label, "Fairfax County, Virginia")
         // The phone allows notifications and the switch is on, so the line under This week says when they come.
         let footer = app.staticTexts["thisWeekFooter"]
         XCTAssertTrue(StubServer.wait(10) { footer.exists && footer.label.contains("A reminder comes every Saturday at 8:00.") },
@@ -269,8 +284,37 @@ final class GardenTests: XCTestCase {
                       "Turning reminders off left \(latestWaiting ?? []) waiting")
     }
 
+    /// Swiping a saved plant to the left shows a red Remove button and leaves the Garden tab open; tapping the button
+    /// unsaves the plant, and the count of saved plants drops by one.
+    @MainActor
+    func testSwipingASavedPlantLeftShowsRemoveAndTappingItRemovesIt() throws {
+        let app = launch(now: "2027-11-18T09:00", saved: ["lindera-benzoin", "asclepias-tuberosa"])
+        let row = element(app, "saved-lindera-benzoin")
+        XCTAssertTrue(row.waitForExistence(timeout: 10), "Spicebush is not listed")
+        let count = element(app, "savedCount")
+        XCTAssertTrue(count.exists, "The saved plants have no count")
+        XCTAssertEqual(count.label, "2 plants")
+        XCTAssertFalse(app.buttons["Remove"].exists, "A Remove button shows before any swipe")
+        reveal(app, row)
+
+        dragLeft(row, by: 120)
+        let remove = app.buttons["remove-lindera-benzoin"]
+        XCTAssertTrue(remove.waitForExistence(timeout: 5), "Swiping left showed no Remove button")
+        XCTAssertEqual(remove.label, "Remove")
+        XCTAssertTrue(remove.isHittable, "The Remove button is covered")
+        XCTAssertGreaterThanOrEqual(remove.frame.width, 44, "The Remove button is narrower than 44 points")
+        XCTAssertTrue(app.navigationBars["My garden"].exists, "Swiping opened the plant's page")
+        attachScreenshot(app, "Saved plant swiped")
+
+        remove.tap()
+        XCTAssertTrue(StubServer.wait(10) { !row.exists }, "Remove did not unsave Spicebush")
+        XCTAssertTrue(StubServer.wait(5) { count.label == "1 plant" }, "The count reads \(count.label) after Remove")
+        XCTAssertTrue(element(app, "saved-asclepias-tuberosa").exists, "Remove took Butterfly Weed too")
+    }
+
     /// A saved plant that is not native to a newly chosen county stays saved and stays listed: purple coneflower grows
-    /// wild in Fairfax County but not in Portland, Oregon. Its long-press menu removes it.
+    /// wild in Fairfax County but not in Portland, Oregon. Pressing and holding it opens no menu; a long swipe to the
+    /// left removes it.
     @MainActor
     func testChangingTheCountyKeepsASavedPlantThatIsNotNativeThere() throws {
         let app = launch(now: "2027-11-18T09:00", saved: ["echinacea-purpurea"])
@@ -296,12 +340,18 @@ final class GardenTests: XCTestCase {
                       "The Garden tab does not show the new county")
         attachScreenshot(app, "Garden after moving to Portland")
 
+        // Pressing and holding opens no menu. A press this long may count as a tap and open the plant's page; if so,
+        // go back.
         row.press(forDuration: 1.2)
-        let remove = app.buttons["Remove"]
-        XCTAssertTrue(remove.waitForExistence(timeout: 5), "The long-press menu has no Remove")
-        attachScreenshot(app, "Saved plant menu")
-        remove.tap()
-        XCTAssertTrue(app.staticTexts["gardenEmpty"].waitForExistence(timeout: 10), "Remove did not unsave the plant")
+        _ = StubServer.wait(1.5) { false }
+        XCTAssertFalse(app.buttons["Remove"].exists, "Pressing and holding opened a menu with Remove")
+        if !app.navigationBars["My garden"].exists {
+            app.navigationBars.buttons.element(boundBy: 0).tap()
+            XCTAssertTrue(app.navigationBars["My garden"].waitForExistence(timeout: 10), "Could not go back to the Garden tab")
+        }
+
+        dragLeft(row, by: row.frame.width * 0.85)
+        XCTAssertTrue(app.staticTexts["gardenEmpty"].waitForExistence(timeout: 10), "A long swipe did not unsave the plant")
     }
 
     /// The first save with a county set asks the phone whether reminders may be sent, once, and sends the answer.
@@ -342,9 +392,9 @@ final class GardenTests: XCTestCase {
 
         let row = element(app, "saved-\(plantId)")
         reveal(app, row)
-        row.press(forDuration: 1.2)
-        let remove = app.buttons["Remove"]
-        XCTAssertTrue(remove.waitForExistence(timeout: 5), "The long-press menu has no Remove")
+        dragLeft(row, by: 120)
+        let remove = app.buttons["remove-\(plantId)"]
+        XCTAssertTrue(remove.waitForExistence(timeout: 5), "Swiping left showed no Remove button")
         remove.tap()
         let note = element(app, "gardenEmptyNote")
         XCTAssertTrue(note.waitForExistence(timeout: 10), "Remove did not unsave the plant")
