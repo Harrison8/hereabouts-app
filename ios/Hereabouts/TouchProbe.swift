@@ -4,13 +4,18 @@
 // - each time it comes to the front or goes to the back;
 // - each finger that touches the screen, as it goes down and as it lifts: where, which view it landed on, the time the
 //   phone stamped on the touch and the time the app was handed it, both in seconds since the phone started;
-// - each time the app's main thread was busy for more than 50 milliseconds, with when it started and how long it took;
+// - each time the app's main thread was busy for more than 50 milliseconds, with when it started, how long it took and
+//   how much processor time the main thread used meanwhile (near the full length means the app's own code was running;
+//   near zero means the main thread was waiting or was not given the processor);
+// - a line from a background thread whenever the main thread has not answered for 60 milliseconds, which shows the
+//   rest of the app was still running;
 // - each change of the reminders switch's setting.
 // The touch clock it adds to the window never recognizes anything, never cancels or delays a touch, and fails as each
 // finger lifts, so it takes no part in a touch. In every other build and launch this does nothing.
 import SwiftUI
 import UIKit
 import UIKit.UIGestureRecognizerSubclass
+import os
 
 extension View {
     func diagnosingTouchesForTests() -> some View {
@@ -89,23 +94,39 @@ private final class TouchClock: UIGestureRecognizer {
 /// than 50 milliseconds late, it was busy, and that is written down.
 private enum MainThreadWatch {
     @MainActor private static var started = false
+    @MainActor private static var lastAnswer: (uptime: Double, cpu: UInt64) = (0, 0)
+    private static let answered = OSAllocatedUnfairLock(initialState: 0)
 
     @MainActor static func start() {
         guard !started else { return }
         started = true
-        ping()
+        lastAnswer = (ProcessInfo.processInfo.systemUptime, clock_gettime_nsec_np(CLOCK_THREAD_CPUTIME_ID))
+        ping(1)
     }
 
-    private static func ping() {
+    private static func ping(_ number: Int) {
         DispatchQueue.global(qos: .userInteractive).asyncAfter(deadline: .now() + .milliseconds(20)) {
             let asked = ProcessInfo.processInfo.systemUptime
-            DispatchQueue.main.async {
-                let answered = ProcessInfo.processInfo.systemUptime
-                let late = Int((answered - asked) * 1000)
-                if late > 50 {
-                    NSLog("%@", "HBDIAG busy from=\(String(format: "%.4f", asked)) for=\(late)ms")
+            DispatchQueue.global(qos: .userInteractive).asyncAfter(deadline: .now() + .milliseconds(60)) {
+                if answered.withLock({ $0 }) < number {
+                    let now = String(format: "%.4f", ProcessInfo.processInfo.systemUptime)
+                    NSLog("%@", "HBDIAG still waiting at=\(now) asked=\(String(format: "%.4f", asked))")
                 }
-                ping()
+            }
+            DispatchQueue.main.async {
+                MainActor.assumeIsolated {
+                    let now = ProcessInfo.processInfo.systemUptime
+                    let cpu = clock_gettime_nsec_np(CLOCK_THREAD_CPUTIME_ID)
+                    answered.withLock { $0 = number }
+                    let late = Int((now - asked) * 1000)
+                    if late > 50 {
+                        let span = Int((now - lastAnswer.uptime) * 1000)
+                        let used = Int((cpu &- lastAnswer.cpu) / 1_000_000)
+                        NSLog("%@", "HBDIAG busy from=\(String(format: "%.4f", asked)) for=\(late)ms main-cpu=\(used)ms of \(span)ms")
+                    }
+                    lastAnswer = (now, cpu)
+                }
+                ping(number + 1)
             }
         }
     }
