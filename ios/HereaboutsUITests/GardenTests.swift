@@ -288,7 +288,10 @@ final class GardenTests: XCTestCase {
         XCTAssertEqual(toggle.value as? String, "1", "Saturday reminders start off")
         // The switch itself at the row's right end, not the middle of the row's label.
         toggle.coordinate(withNormalizedOffset: CGVector(dx: 0.93, dy: 0.5)).tap()
-        XCTAssertTrue(StubServer.wait(5) { toggle.value as? String == "0" }, "The switch did not turn off")
+        let turnedOff = StubServer.wait(5) { toggle.value as? String == "0" }
+        attachScreenshot(app, "HBDIAG Settings, switch tapped")
+        if !turnedOff { print("HBDIAG switch frame \(toggle.frame)\n\(app.debugDescription)") }
+        XCTAssertTrue(turnedOff, "The switch did not turn off")
         XCTAssertTrue(StubServer.wait(15) { self.latestWaiting == [] },
                       "Turning reminders off left \(latestWaiting ?? []) waiting")
     }

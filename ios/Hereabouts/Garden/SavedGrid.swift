@@ -273,11 +273,14 @@ private struct SidewaysSwipe: ViewModifier {
 
     func body(content: Content) -> some View {
         if #available(iOS 18.0, *) {
-            if on {
-                content.gesture(SidewaysPan(frame: frame, changed: changed, ended: ended))
-            } else {
-                content
+            Group {
+                if on {
+                    content.gesture(SidewaysPan(frame: frame, changed: changed, ended: ended))
+                } else {
+                    content
+                }
             }
+            .onChange(of: on, initial: true) { _, now in NSLog("HBDIAG swipe on=\(now)") }
         } else {
             content
                 .simultaneousGesture(
@@ -318,11 +321,13 @@ private struct SidewaysPan: UIGestureRecognizerRepresentable {
     func makeUIGestureRecognizer(context: Context) -> UIPanGestureRecognizer {
         let pan = UIPanGestureRecognizer()
         pan.delegate = context.coordinator
+        NSLog("HBDIAG pan made")
         return pan
     }
 
     func handleUIGestureRecognizerAction(_ recognizer: UIPanGestureRecognizer, context: Context) {
         let dx = recognizer.translation(in: recognizer.view).x
+        NSLog("HBDIAG pan state=\(recognizer.state.rawValue) dx=\(dx)")
         switch recognizer.state {
         case .began, .changed: changed(dx)
         case .ended: ended(dx, true)
@@ -342,7 +347,12 @@ private struct SidewaysPan: UIGestureRecognizerRepresentable {
         /// the row, so without this a swipe elsewhere on the screen could slide or remove the row.
         func gestureRecognizer(_ recognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
             let rect = frame.rect
-            return rect.isEmpty || rect.contains(touch.location(in: nil))
+            let answer = rect.isEmpty || rect.contains(touch.location(in: nil))
+            let host = recognizer.view.map { "\(type(of: $0)) \($0.frame)" } ?? "none"
+            let hit = touch.view.map { "\(type(of: $0))" } ?? "none"
+            let others = (touch.gestureRecognizers ?? []).map { "\(type(of: $0))" }.joined(separator: ",")
+            NSLog("HBDIAG receive at=\(touch.location(in: nil)) rect=\(rect) answer=\(answer) host=\(host) hit=\(hit) others=\(others)")
+            return answer
         }
 
         /// Starts only when the finger moves more sideways than up or down.

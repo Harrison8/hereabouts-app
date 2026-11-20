@@ -19,6 +19,7 @@ final class AppModel {
     /// Whether the person wants the Saturday reminder. On until they turn it off in Settings.
     var remindersOn: Bool {
         didSet {
+            NSLog("HBDIAG remindersOn=\(remindersOn)")
             defaults.set(remindersOn, forKey: Self.remindersKey)
             rescheduleReminders()
         }
