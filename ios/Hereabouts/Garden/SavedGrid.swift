@@ -18,6 +18,8 @@ struct SavedGrid: View {
     @Environment(\.dynamicTypeSize) private var typeSize
     /// The plant whose row is swiped open, if any. Opening one row closes the others.
     @State private var openId: String?
+    /// When a sideways swipe last moved a row.
+    @State private var swipes = SwipeClock()
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -39,7 +41,8 @@ struct SavedGrid: View {
             VStack(spacing: 0) {
                 ForEach(Array(plants.enumerated()), id: \.element.id) { i, plant in
                     if i > 0 { Theme.rule.frame(height: 1) }
-                    SwipeToRemove(id: plant.id, openId: $openId, remove: { remove(plant.id) }) {
+                    SwipeToRemove(id: plant.id, openId: $openId, swiped: { swipes.mark() },
+                                  remove: { remove(plant.id) }) {
                         row(plant)
                     }
                 }
@@ -64,6 +67,9 @@ struct SavedGrid: View {
             ? AnyLayout(VStackLayout(alignment: .leading, spacing: 8))
             : AnyLayout(HStackLayout(alignment: .center, spacing: 12))
         return Button {
+            // The phone also reports a tap as the finger lifts at the end of a sideways swipe. That tap is ignored, or
+            // it would close the row the swipe just opened, or open the page of a plant the swipe just removed.
+            guard !swipes.justSwiped else { return }
             // With a row swiped open, a tap only closes it, as in Mail.
             if openId != nil { openId = nil } else { open(plant.id) }
         } label: {
@@ -116,6 +122,16 @@ struct SavedGrid: View {
     }
 }
 
+/// When a sideways swipe last moved a saved plant's row. A class, so marking it does not redraw the rows.
+private final class SwipeClock {
+    private var last = Date.distantPast
+
+    func mark() { last = Date() }
+
+    /// A swipe moved a row, or ended, in the last half second.
+    var justSwiped: Bool { Date().timeIntervalSince(last) < 0.5 }
+}
+
 /// One saved plant's row that slides to the left over the red Remove button. A short swipe leaves the button showing,
 /// 80 points wide; a swipe past half the row removes the plant at once; a swipe that goes mostly up or down is left to
 /// the page's scrolling. The button exists only while the row is slid open, so VoiceOver and a closed row never meet
@@ -123,6 +139,8 @@ struct SavedGrid: View {
 private struct SwipeToRemove<Row: View>: View {
     let id: String
     @Binding var openId: String?
+    /// Called each time a sideways swipe moves the row, and when it ends.
+    let swiped: () -> Void
     let remove: () -> Void
     @ViewBuilder let row: () -> Row
 
@@ -167,6 +185,7 @@ private struct SwipeToRemove<Row: View>: View {
 
     /// The finger has moved `dx` points sideways since the swipe began.
     private func changed(_ dx: CGFloat) {
+        swiped()
         if start == nil {
             start = offset
             if openId != id { openId = id }
@@ -177,6 +196,7 @@ private struct SwipeToRemove<Row: View>: View {
     /// The finger lifted, or the phone called the swipe off, `dx` points from where it began.
     private func ended(_ dx: CGFloat) {
         guard let from = start else { return }
+        swiped()
         start = nil
         let end = min(0, from + dx)
         if width > 0, -end > width * 0.55 {
