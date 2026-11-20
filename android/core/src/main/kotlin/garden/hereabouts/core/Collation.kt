@@ -13,9 +13,9 @@
 // The table covers the characters the data uses and the ones around them: ASCII, the no-break space, the dashes and
 // curly quotes, a few Latin-1 signs, and any Latin letter that splits into a plain letter plus accents. A character
 // outside the table sorts after the letters, by its code point, which is not where the website puts it. So the table
-// is also kept in scripts/app/collation-table.mjs: building the bundle fails when a plant name uses a character
+// is also kept in the website's bundle-building logic: building the bundle fails when a plant name uses a character
 // missing there, and CollationTest checks this table equals it (collation.json's `table`). A new character goes in
-// that file, in Collation.swift and here.
+// that list, in Collation.swift and here.
 package garden.hereabouts.core
 
 import java.text.Normalizer

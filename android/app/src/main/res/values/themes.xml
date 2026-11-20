@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The window behind the Compose screens: white, with no bar of its own. Compose draws the bars and the colours. -->
+<resources>
+    <style name="Theme.Hereabouts" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">@android:color/white</item>
+    </style>
+</resources>

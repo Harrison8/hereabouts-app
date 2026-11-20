@@ -1,5 +1,5 @@
 // Checks LocationLookup against expected/location.json: every case there is the website's own answer (location.js
-// run by scripts/app/expected-answers.mjs), and the Kotlin code must give exactly the same one.
+// run by the website's expected-answers logic), and the Kotlin code must give exactly the same one.
 package garden.hereabouts.core
 
 import kotlinx.serialization.json.JsonArray

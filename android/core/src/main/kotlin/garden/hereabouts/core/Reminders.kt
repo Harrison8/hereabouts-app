@@ -1,5 +1,5 @@
 // The Saturday-morning reminders: which Saturdays, which jobs, and which saved plants each job names. Ported line by
-// line from scripts/app/reminders.mjs, the version the website's app build uses. The same as the iPhone app's
+// line from the website's reminder logic, the version its app build uses. The same as the iPhone app's
 // Reminders.swift. The app turns each Reminder into a local notification. The tests check it against
 // expected/care.json.
 //

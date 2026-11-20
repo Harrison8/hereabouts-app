@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The app asks for no permissions: everything it shows ships inside it.
+     What it keeps (the county, the saved plants, the ticked jobs) stays on this phone: Android's backup to the
+     person's Google account is off, and the extraction rules keep it out of a copy to a new phone as well, which
+     Android 12 and later make whatever allowBackup says. On Android 8 to 11, allowBackup="false" alone stops both
+     the backup and the copy to a new phone, so the older fullBackupContent rules lint asks for would have nothing
+     left to do. -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <application
+        android:allowBackup="false"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.Hereabouts"
+        tools:ignore="DataExtractionRules"
+        tools:targetApi="31">
+        <activity
+            android:name=".MainActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+
+</manifest>

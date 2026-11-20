@@ -1,5 +1,6 @@
-# The iPhone build. For now a placeholder that lists the files in the snapshot; it will be replaced by the build,
-# the screen tests, the screenshots and the TestFlight upload.
+# The iPhone app: its logic tests, then the app and its screen tests on the iPhone simulator, with a screenshot of
+# each screen saved for review. XcodeGen makes the Xcode project from ios/project.yml first, so no Xcode project file
+# is kept in git. Nothing is signed here: simulator builds need no signing.
 # Runs on every snapshot pushed here (main and pr/<number>) and by hand. Never on outside contributions.
 name: iPhone app
 
@@ -10,17 +11,172 @@ on:
 permissions:
   contents: read
 
+# A new push to the same branch cancels the run still going for the old one.
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  list:
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
+  app:
+    runs-on: macos-26
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v7
         with:
           persist-credentials: false
-      - name: List the snapshot
-        run: find . -path ./.git -prune -o -type f -print | sort
+
+      # Build output, test results and screenshots go outside the checkout.
+      - name: Work folders
+        run: |
+          {
+            echo "DERIVED=$RUNNER_TEMP/derived"
+            echo "RESULTS=$RUNNER_TEMP/results"
+            echo "SHOTS=$RUNNER_TEMP/screenshots"
+          } >> "$GITHUB_ENV"
+
+      - name: Xcode and simulators on this machine
+        run: |
+          xcodebuild -version
+          xcrun simctl list runtimes
+          xcrun simctl list devices available
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: swift test
+        working-directory: ios/HereaboutsCore
+        run: swift test
+
+      - name: Make the Xcode project
+        working-directory: ios
+        run: xcodegen
+
+      - name: Build the app and its tests
+        working-directory: ios
+        run: |
+          set -o pipefail
+          xcodebuild build-for-testing -quiet \
+            -project Hereabouts.xcodeproj -scheme Hereabouts \
+            -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath "$DERIVED" \
+            CODE_SIGNING_ALLOWED=NO
+
+      # The app must carry the data, tables, photos and fonts, and never the expected answers, which only the tests read.
+      - name: Check what the app carries
+        run: |
+          set -euo pipefail
+          app="$DERIVED/Build/Products/Debug-iphonesimulator/Hereabouts.app"
+          for d in data tables images fonts; do
+            test -d "$app/bundle/$d" || { echo "::error::The app has no bundle/$d folder."; exit 1; }
+          done
+          if [ -e "$app/bundle/expected" ]; then
+            echo "::error::The app carries bundle/expected, which only the tests need."
+            exit 1
+          fi
+          ls "$app" "$app/bundle"
+          du -sh "$app"
+
+      # What the app ships must stay under 95 MB: the data, tables, photos and fonts in bundle/. The whole Debug app
+      # is not measured, because its test-only code makes it bigger than the shipped app.
+      - name: Check the shipped content stays under 95 MB
+        run: |
+          set -euo pipefail
+          bundle="$DERIVED/Build/Products/Debug-iphonesimulator/Hereabouts.app/bundle"
+          limit=95000000
+          for d in data tables images fonts; do
+            echo "bundle/$d: $(find "$bundle/$d" -type f -exec stat -f %z {} + | awk '{s+=$1} END {print s+0}') bytes"
+          done
+          total=$(find "$bundle" -type f -exec stat -f %z {} + | awk '{s+=$1} END {print s+0}')
+          echo "bundle/ holds $total bytes. The limit is $limit."
+          echo "- Shipped content: $total bytes of $limit" >> "$GITHUB_STEP_SUMMARY"
+          if [ "$total" -gt "$limit" ]; then
+            echo "::error::The shipped content is $total bytes, over the 95 MB limit ($limit bytes)."
+            exit 1
+          fi
+
+      # The simulators this machine has, for the two test steps. Runtime versions are compared as numbers, so 26.10
+      # comes after 26.2.
+      - name: List the simulators as JSON
+        run: |
+          xcrun simctl list runtimes -j > "$RUNNER_TEMP/runtimes.json"
+          xcrun simctl list devices available -j > "$RUNNER_TEMP/devices.json"
+
+      # iPhone 17 on the newest iOS 26 the machine has.
+      - name: Screen tests on iOS 26
+        working-directory: ios
+        run: |
+          set -euo pipefail
+          udid=$(jq -rn --slurpfile rt "$RUNNER_TEMP/runtimes.json" --slurpfile dv "$RUNNER_TEMP/devices.json" '
+            [$rt[0].runtimes[] | select(.platform == "iOS" and .isAvailable and (.version | startswith("26.")))]
+              | sort_by(.version | split(".") | map(tonumber))
+              | map(.identifier as $id | ($dv[0].devices[$id] // [])[] | select(.name == "iPhone 17") | .udid)
+              | last // empty')
+          if [ -z "$udid" ]; then
+            echo "::error::No iPhone 17 simulator on iOS 26 on this machine."
+            exit 1
+          fi
+          echo "Testing on iPhone 17 ($udid)."
+          echo "- iPhone 17, iOS 26: ran" >> "$GITHUB_STEP_SUMMARY"
+          xcodebuild test-without-building \
+            -project Hereabouts.xcodeproj -scheme Hereabouts \
+            -destination "platform=iOS Simulator,id=$udid,arch=arm64" \
+            -derivedDataPath "$DERIVED" \
+            -resultBundlePath "$RESULTS/ios26.xcresult"
+
+      # The lowest iOS the app supports, when this machine has an iOS 17 simulator. None is downloaded.
+      - name: Screen tests on iOS 17, if this machine has it
+        working-directory: ios
+        run: |
+          set -euo pipefail
+          runtime=$(jq -r '
+            [.runtimes[] | select(.platform == "iOS" and .isAvailable and (.version | startswith("17.")))]
+              | sort_by(.version | split(".") | map(tonumber)) | last | .identifier // empty' "$RUNNER_TEMP/runtimes.json")
+          if [ -z "$runtime" ]; then
+            echo "This machine has no iOS 17 simulator, so the iOS 17 screen tests are skipped."
+            echo "- iOS 17: skipped, this machine has no iOS 17 simulator" >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          udid=$(xcrun simctl list devices available -j | jq -r --arg rt "$runtime" '
+            [.devices[$rt][]? | select(.name | startswith("iPhone"))] | first | .udid // empty')
+          if [ -z "$udid" ]; then
+            # An iPhone 15 runs iOS 17; newer models do not.
+            udid=$(xcrun simctl create "iPhone 15 (iOS 17)" com.apple.CoreSimulator.SimDeviceType.iPhone-15 "$runtime")
+          fi
+          name=$(xcrun simctl list devices -j | jq -r --arg u "$udid" '[.devices[][] | select(.udid == $u)] | first | .name')
+          echo "Testing on $name, $runtime ($udid)."
+          echo "- $name, $runtime: ran" >> "$GITHUB_STEP_SUMMARY"
+          xcodebuild test-without-building \
+            -project Hereabouts.xcodeproj -scheme Hereabouts \
+            -destination "platform=iOS Simulator,id=$udid,arch=arm64" \
+            -derivedDataPath "$DERIVED" \
+            -resultBundlePath "$RESULTS/ios17.xcresult"
+
+      # Every screenshot the screen tests attached, named by run and screen, from each result.
+      - name: Take the screenshots out of the results
+        if: always()
+        run: |
+          set -uo pipefail
+          mkdir -p "$SHOTS"
+          for r in "$RESULTS"/*.xcresult; do
+            [ -e "$r" ] || continue
+            run=$(basename "$r" .xcresult)
+            out="$SHOTS/$run"
+            mkdir -p "$out"
+            xcrun xcresulttool export attachments --path "$r" --output-path "$out" || continue
+            if [ -f "$out/manifest.json" ]; then
+              jq -r '.[] | .attachments[]? | [.exportedFileName, .suggestedHumanReadableName] | @tsv' "$out/manifest.json" |
+                while IFS=$'\t' read -r file nice; do
+                  [ -n "$file" ] && [ -n "$nice" ] && [ -f "$out/$file" ] && mv "$out/$file" "$out/$run-$nice"
+                done
+            fi
+          done
+          find "$SHOTS" -type f | sort
+
+      - name: Save the screenshots
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: iphone-screenshots
+          path: ${{ runner.temp }}/screenshots
+          if-no-files-found: warn
+          retention-days: 14

@@ -1,6 +1,6 @@
-// The Android app's Gradle build. For now it has one module, core: the app's logic in plain Kotlin, tested
-// against the same expected answers as the website and the iPhone app (apps/shared/bundle/expected).
-// Every plugin and library comes from Maven Central or Google's Maven; the Kotlin plugins are published on Central.
+// The Android app's Gradle build, in two modules: core, the app's logic in plain Kotlin, tested against the same
+// expected answers as the website and the iPhone app (../shared/bundle/expected); and app, the app itself.
+// Every plugin and library comes from Maven Central or Google's Maven.
 pluginManagement {
     repositories {
         mavenCentral()
@@ -19,3 +19,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "hereabouts"
 include(":core")
+include(":app")

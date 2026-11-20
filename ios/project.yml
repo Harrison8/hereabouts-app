@@ -1,0 +1,101 @@
+# The iPhone app's Xcode project, written as text. XcodeGen turns it into Hereabouts.xcodeproj on the Mac build
+# machine (run `xcodegen` in this folder), so no Xcode project file is ever edited by hand or kept in git.
+# Every path is relative to this folder, so it works wherever the folder sits.
+name: Hereabouts
+
+options:
+  bundleIdPrefix: garden.hereabouts
+  deploymentTarget:
+    iOS: "17.0"
+  createIntermediateGroups: true
+
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    MARKETING_VERSION: "1.0"
+    CURRENT_PROJECT_VERSION: "1"
+
+packages:
+  # The app's logic, with no UI: location finding, the plant list, sellers, care timing.
+  HereaboutsCore:
+    path: HereaboutsCore
+
+targets:
+  Hereabouts:
+    type: application
+    platform: iOS
+    sources:
+      - path: Hereabouts
+      # The shared data bundle, copied into the app as bundle/. Each folder is listed on its own so that
+      # bundle/expected/, the expected answers that only the tests read, never ships in the app.
+      - path: ../shared/bundle/data
+        type: folder
+        buildPhase: &bundle
+          copyFiles:
+            destination: resources
+            subpath: bundle
+      - path: ../shared/bundle/tables
+        type: folder
+        buildPhase: *bundle
+      - path: ../shared/bundle/images
+        type: folder
+        buildPhase: *bundle
+      # The two brand fonts and their licences. Info.plist registers the fonts from here (UIAppFonts).
+      - path: ../shared/bundle/fonts
+        type: folder
+        buildPhase: *bundle
+    dependencies:
+      - package: HereaboutsCore
+    settings:
+      base:
+        PRODUCT_NAME: Hereabouts
+        PRODUCT_BUNDLE_IDENTIFIER: garden.hereabouts.app
+        INFOPLIST_FILE: Hereabouts/Resources/Info.plist
+        GENERATE_INFOPLIST_FILE: NO
+        # iPhone only.
+        TARGETED_DEVICE_FAMILY: "1"
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+        ENABLE_PREVIEWS: YES
+
+  # Checks that run inside the app: the fonts are registered, the bundle is in place, the stores keep what they
+  # should.
+  HereaboutsTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: HereaboutsTests
+      - path: TestSupport
+    dependencies:
+      - target: Hereabouts
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: garden.hereabouts.app.tests
+        GENERATE_INFOPLIST_FILE: YES
+
+  # Screen tests: they launch the app and tap through it like a person.
+  HereaboutsUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - path: HereaboutsUITests
+      - path: TestSupport
+    dependencies:
+      - target: Hereabouts
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: garden.hereabouts.app.uitests
+        GENERATE_INFOPLIST_FILE: YES
+
+schemes:
+  Hereabouts:
+    build:
+      targets:
+        Hereabouts: all
+        HereaboutsTests: [test]
+        HereaboutsUITests: [test]
+    test:
+      config: Debug
+      targets:
+        - HereaboutsTests
+        - HereaboutsUITests

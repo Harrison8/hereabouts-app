@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Lint settings for the app. -->
+<lint>
+    <!-- The app is built for Android 16 (API 36) on purpose: compileSdk and targetSdk 36 were chosen for this first
+         version, and moving to 37 is its own later change. These only say a newer level exists. Newer library
+         versions are still reported, because they are named in gradle/libs.versions.toml, not in this module's
+         build file. -->
+    <issue id="OldTargetApi" severity="ignore" />
+    <issue id="GradleDependency">
+        <ignore regexp="compileSdk" />
+        <ignore path="build.gradle.kts" />
+    </issue>
+</lint>

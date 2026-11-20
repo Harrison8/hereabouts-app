@@ -1,4 +1,4 @@
-// Which garden jobs are due in a given week, ported line by line from scripts/newsletter/care-core.mjs, which the
+// Which garden jobs are due in a given week, ported line by line from the website's care-timing logic, which the
 // newsletter and the website's reminders share. The same as the iPhone app's Care.swift. The rules are the bundle's
 // tables/care-rules.json; the timing of each county (its frost dates and first warm week) is
 // tables/care-anchors.json.

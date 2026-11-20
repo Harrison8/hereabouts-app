@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The brand mark shrunk to 80%, so its corners stay inside the area every launcher shape keeps (a circle of 66 of
+     the icon's 108 dp). Unshrunk, the mark reaches 380 of 512 pixels from the centre and a round icon would cut its
+     corners. -->
+<inset xmlns:android="http://schemas.android.com/apk/res/android"
+    android:drawable="@mipmap/ic_launcher_foreground"
+    android:inset="10%" />

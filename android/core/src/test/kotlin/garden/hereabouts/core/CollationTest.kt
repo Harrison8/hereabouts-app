@@ -73,7 +73,7 @@ class CollationTest {
 
     @Test
     fun tableIsTheSharedList() {
-        // collation.json's table is scripts/app/collation-table.mjs, the list the bundle check uses to refuse plant
+        // collation.json's table is the website's collation list, the one the bundle check uses to refuse plant
         // names this comparator cannot sort. Collation.table must hold exactly the same characters and weights.
         val rows = Expected.field("collation.json", "table") as? JsonArray ?: fail("collation.json's table is not a list")
         val want = rows.map { row ->

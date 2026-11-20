@@ -1,6 +1,6 @@
-// Checks Care, the port of scripts/newsletter/care-core.mjs, on made-up rules and timing dates. The answers were
-// worked out by running care-core.mjs itself in Node. The whole path through the real rules and every county's
-// timing is checked against apps/shared/bundle/expected/care.json in RemindersTest.
+// Checks Care, the port of the website's care-timing logic, on made-up rules and timing dates. The answers were
+// worked out by running that logic itself in Node. The whole path through the real rules and every county's
+// timing is checked against the bundle's expected/care.json in RemindersTest.
 package garden.hereabouts.core
 
 import kotlinx.serialization.builtins.ListSerializer

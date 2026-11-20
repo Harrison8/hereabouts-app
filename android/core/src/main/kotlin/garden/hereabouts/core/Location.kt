@@ -406,7 +406,7 @@ object LocationLookup {
     }
 
     /**
-     * nearestZip (scripts/app/app-logic.mjs) then as a ZIP: the county of the ZIP whose table point is closest to the
+     * The website's nearest-ZIP logic, then as a ZIP: the county of the ZIP whose table point is closest to the
      * position. Ties go to the lower ZIP.
      */
     fun nearest(lat: Double, lon: Double, tables: Tables): LocationResult {

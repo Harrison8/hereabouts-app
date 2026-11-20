@@ -1,5 +1,5 @@
-// Checks Reminders against apps/shared/bundle/expected/care.json: for each case (a time zone, a moment, a county and
-// some saved plants) the Saturday reminders the website's scripts/app/reminders.mjs makes, with the real care rules
+// Checks Reminders against the bundle's expected/care.json: for each case (a time zone, a moment, a county and
+// some saved plants) the Saturday reminders the website's reminder logic makes, with the real care rules
 // and the county's real timing dates. Then the Saturday and message rules on their own.
 package garden.hereabouts.core
 

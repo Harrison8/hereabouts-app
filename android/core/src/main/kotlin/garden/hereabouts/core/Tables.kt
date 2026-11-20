@@ -1,5 +1,5 @@
 // The six lookup tables location finding uses, read from the bundle's tables/ folder. They are the website's own
-// files, copied as they are by `npm run app:bundle`. Their rows are JSON lists, not objects, so they are read by hand.
+// files, copied into the bundle as they are. Their rows are JSON lists, not objects, so they are read by hand.
 package garden.hereabouts.core
 
 import kotlinx.serialization.json.JsonArray
@@ -55,9 +55,16 @@ class Tables(
 
     companion object {
         /** Reads the six tables from `tablesDir` (the bundle's tables/ folder). Throws if a file is missing or has another shape. */
-        fun load(tablesDir: File): Tables {
+        fun load(tablesDir: File): Tables = load { name -> tablesDir.resolve(name).readText(Charsets.UTF_8) }
+
+        /**
+         * Reads the six tables through `read`, which gives a file's text by its name in the bundle's tables/ folder.
+         * The Android app reads them this way from its assets, which are not files. Throws if a file is missing or
+         * has another shape.
+         */
+        fun load(read: (name: String) -> String): Tables {
             fun obj(name: String): JsonObject =
-                json.parseToJsonElement(tablesDir.resolve(name).readText(Charsets.UTF_8)) as? JsonObject
+                json.parseToJsonElement(read(name)) as? JsonObject
                     ?: throw IllegalArgumentException("$name is not a JSON object")
             return Tables(
                 zipCounty = obj("zip-county.json").mapValues { (zip, v) -> zipRow(zip, v) },

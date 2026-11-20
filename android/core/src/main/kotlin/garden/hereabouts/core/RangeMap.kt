@@ -1,6 +1,6 @@
 // The plant page's "Native range" map: the lower 48 states' ecoregions as outlines, and the visitor's place as a
 // dot. A port of the website's range-shapes.js, read from the bundle's tables/range-shapes.json, which
-// scripts/gen-range-shapes.mjs writes from the same numbers. The same as the iPhone app's RangeMap.swift. The tests
+// the website's range-map logic writes from the same numbers. The same as the iPhone app's RangeMap.swift. The tests
 // check it against expected/map.json.
 package garden.hereabouts.core
 

@@ -37,8 +37,14 @@ data class AppData(
 
     companion object {
         /** Reads the four files in `dataDir` (the bundle's data/ folder). Throws if a file is missing or does not decode. */
-        fun load(dataDir: File): AppData {
-            fun read(name: String): String = dataDir.resolve(name).readText(Charsets.UTF_8)
+        fun load(dataDir: File): AppData = load { name -> dataDir.resolve(name).readText(Charsets.UTF_8) }
+
+        /**
+         * Reads the four files through `read`, which gives a file's text by its name in the bundle's data/ folder.
+         * The Android app reads them this way from its assets, which are not files. Throws if a file is missing or
+         * does not decode.
+         */
+        fun load(read: (name: String) -> String): AppData {
             val version = json.decodeFromString(DataVersion.serializer(), read("version.json"))
             return decode(read("plants.json"), read("vendors.json"), read("plant-regions.json"), version)
         }
