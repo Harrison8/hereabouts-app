@@ -29,7 +29,8 @@ struct GardenView: View {
                         SavedGrid(plants: week.savedPlants, photos: model.photos,
                                   jobCount: { id in week.rows.filter { $0.plantIds.contains(id) }.count },
                                   open: { self.model.gardenPath.append($0) },
-                                  remove: { self.model.pressSave($0) })
+                                  remove: { self.model.pressSave($0) },
+                                  swipeable: model.selectedTab == .garden)
                             .padding(.top, 32)
                     }
                 }

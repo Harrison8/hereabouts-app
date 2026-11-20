@@ -14,6 +14,9 @@ struct SavedGrid: View {
     let jobCount: (String) -> Int
     let open: (String) -> Void
     let remove: (String) -> Void
+    /// Whether the rows follow a sideways swipe. Off while another tab is showing, so the swipe's pan is not attached
+    /// anywhere while the user works on the Plants or Settings tab.
+    let swipeable: Bool
 
     @Environment(\.dynamicTypeSize) private var typeSize
     /// The plant whose row is swiped open, if any. Opening one row closes the others.
@@ -42,7 +45,7 @@ struct SavedGrid: View {
                 ForEach(Array(plants.enumerated()), id: \.element.id) { i, plant in
                     if i > 0 { Theme.rule.frame(height: 1) }
                     SwipeToRemove(id: plant.id, openId: $openId, swiped: { swipes.mark() },
-                                  remove: { remove(plant.id) }) {
+                                  remove: { remove(plant.id) }, swipeable: swipeable) {
                         row(plant)
                     }
                 }
@@ -142,6 +145,8 @@ private struct SwipeToRemove<Row: View>: View {
     /// Called each time a sideways swipe moves the row, and when it ends.
     let swiped: () -> Void
     let remove: () -> Void
+    /// Whether the row follows a sideways swipe at all.
+    let swipeable: Bool
     @ViewBuilder let row: () -> Row
 
     /// How far the row has slid to the left, as a negative number of points.
@@ -157,7 +162,7 @@ private struct SwipeToRemove<Row: View>: View {
         row()
             .background(Color.white)
             .offset(x: offset)
-            .modifier(SidewaysSwipe(changed: changed, ended: ended))
+            .modifier(SidewaysSwipe(on: swipeable, changed: changed, ended: ended))
             .frame(maxWidth: .infinity)
             .background(alignment: .trailing) {
                 if offset < 0 { removeButton }
@@ -221,6 +226,8 @@ private struct SwipeToRemove<Row: View>: View {
 /// scroll view keeps the page from scrolling, so there the swipe is UIKit's pan, which only starts when the finger
 /// moves more sideways than up or down. iOS 17 keeps SwiftUI's drag, which scrolls alongside.
 private struct SidewaysSwipe: ViewModifier {
+    /// When false, the iOS 18 pan is left off entirely. The iOS 17 drag runs alongside other gestures, so it stays.
+    let on: Bool
     let changed: (CGFloat) -> Void
     let ended: (CGFloat) -> Void
 
@@ -228,7 +235,11 @@ private struct SidewaysSwipe: ViewModifier {
 
     func body(content: Content) -> some View {
         if #available(iOS 18.0, *) {
-            content.gesture(SidewaysPan(changed: changed, ended: ended))
+            if on {
+                content.gesture(SidewaysPan(changed: changed, ended: ended))
+            } else {
+                content
+            }
         } else {
             content.simultaneousGesture(
                 DragGesture(minimumDistance: 16)
