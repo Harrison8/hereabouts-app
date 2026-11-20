@@ -1,7 +1,8 @@
-// The Garden tab, as d1-my-garden.png and my-garden-empty.png draw it: the county under the title; This week, the
-// jobs due for the saved plants in the week that runs from Saturday to Friday, each with a tick circle, and how many
-// are ticked off; a line saying where the dates come from; then the saved plants. Tapping a job opens its sheet
-// (JobSheet); tapping a plant opens its page. With nothing saved, a short note and a button to the Plants tab.
+// The Garden tab, as d1-my-garden.png and my-garden-empty.png draw it: the county under the title, after a map pin;
+// This week, the jobs due for the saved plants in the week that runs from Saturday to Friday, each with a tick circle,
+// and how many are ticked off; a line saying where the dates come from; then the saved plants. Tapping a job opens its
+// sheet (JobSheet); tapping a plant opens its page, and swiping it to the left shows Remove (SavedGrid). With nothing
+// saved, a short note and a button to the Plants tab.
 //
 // The jobs are the website's: HereaboutsCore's Care.dueJobs for the county's timing dates and the saved plants, with
 // the week's Saturday as the send date, every saved plant named. Saved plants that are not native to the county
@@ -50,14 +51,25 @@ struct GardenView: View {
 
     // MARK: - the county
 
+    @ViewBuilder
     private var countyLine: some View {
-        Text(model.location.map { "\($0.countyName), \($0.stateName)" } ?? "")
-            .font(.body(17, .regular, relativeTo: .body))
-            .foregroundStyle(Theme.ink)
-            .fixedSize(horizontal: false, vertical: true)
-            .padding(.horizontal, 16)
-            .padding(.top, 4)
-            .accessibilityIdentifier("gardenCounty")
+        if let loc = model.location {
+            countyRow(loc)
+        } else {
+            Color.clear.frame(height: 4)
+        }
+    }
+
+    private func countyRow(_ loc: Location) -> some View {
+        CountyLine(color: Theme.ink, weight: .regular) {
+            Text("\(loc.countyName), \(loc.stateName)")
+                .font(.body(17, .regular, relativeTo: .body))
+                .foregroundStyle(Theme.ink)
+                .fixedSize(horizontal: false, vertical: true)
+                .accessibilityIdentifier("gardenCounty")
+        }
+        .padding(.horizontal, 16)
+        .padding(.top, 4)
     }
 
     // MARK: - nothing saved

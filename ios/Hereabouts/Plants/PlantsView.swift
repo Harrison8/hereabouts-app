@@ -104,20 +104,22 @@ struct PlantsView: View {
     @ViewBuilder
     private func header(nativeCount: Int, shownCount: Int, st: FilterState, data: AppData) -> some View {
         if let loc = model.location {
-            Button {
-                changingLocation = true
-            } label: {
-                Text("\(loc.countyName), \(loc.stateName)")
-                    .font(.body(17, .medium, relativeTo: .body))
-                    .foregroundStyle(Theme.moss)
-                    .multilineTextAlignment(.leading)
-                    .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
-                    .contentShape(Rectangle())
+            CountyLine(color: Theme.moss, weight: .medium) {
+                Button {
+                    changingLocation = true
+                } label: {
+                    Text("\(loc.countyName), \(loc.stateName)")
+                        .font(.body(17, .medium, relativeTo: .body))
+                        .foregroundStyle(Theme.moss)
+                        .multilineTextAlignment(.leading)
+                        .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityIdentifier("plantsCounty")
+                .accessibilityHint("Change location")
             }
-            .buttonStyle(.plain)
             .padding(.horizontal, 16)
-            .accessibilityIdentifier("plantsCounty")
-            .accessibilityHint("Change location")
 
             let coverage = LocationLookup.coverageLine(loc, nativeCount: nativeCount, served: data.served,
                                                        ecoregionNames: model.tables.ecoregionNames)

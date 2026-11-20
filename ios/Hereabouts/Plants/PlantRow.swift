@@ -55,9 +55,10 @@ struct PlantRow: View {
         .accessibilityIdentifier("plant-\(plant.id)")
     }
 
-    /// "Perennial · 2–3 ft", or the type alone when the plant has no heights.
+    /// "Perennial · 2 to 3 ft", or the type alone when the plant has no heights.
     private var meta: String {
-        [Labels.category(plant.category), Labels.ftRange(plant.height)].filter { !$0.isEmpty }.joined(separator: " · ")
+        [Labels.category(plant.category), RangeText.display(Labels.ftRange(plant.height))].filter { !$0.isEmpty }
+            .joined(separator: " · ")
     }
 
     private var words: some View {

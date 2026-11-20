@@ -136,7 +136,7 @@ struct JobSheet: View {
                         // The square sits about halfway up the first line's small letters.
                         .alignmentGuide(.firstTextBaseline) { d in d.height + 2 }
                         .accessibilityHidden(true)
-                    Text(fact)
+                    Text(RangeText.display(fact))
                         .font(.body(17, .regular, relativeTo: .body))
                         .foregroundStyle(Theme.ink)
                         .fixedSize(horizontal: false, vertical: true)

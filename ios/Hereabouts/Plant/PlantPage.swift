@@ -156,18 +156,25 @@ struct PlantPage: View {
         }
     }
 
-    /// The kraft row that also opens Where to buy, with how many sellers there are, as plant-page-scrolled.png draws
-    /// it. With no seller it says the website card's "No seller listed yet".
+    /// The kraft row that also opens Where to buy, with how many sellers there are and the grey arrow at its right, as
+    /// plant-page-scrolled.png draws it. With no seller it says the website card's "No seller listed yet".
     private func buyRow(_ buy: BuyView, location: Location?) -> some View {
         Button { buying = true } label: {
-            VStack(alignment: .leading, spacing: 2) {
-                Text("Where to buy")
-                    .font(.body(17, .semibold, relativeTo: .body))
-                    .foregroundStyle(Theme.ink)
-                Text(Self.buySubtitle(buy, location: location))
-                    .font(.body(14, .regular, relativeTo: .footnote))
-                    .foregroundStyle(Theme.inkSoft)
-                    .fixedSize(horizontal: false, vertical: true)
+            HStack(spacing: 8) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Where to buy")
+                        .font(.body(17, .semibold, relativeTo: .body))
+                        .foregroundStyle(Theme.ink)
+                    Text(Self.buySubtitle(buy, location: location))
+                        .font(.body(14, .regular, relativeTo: .footnote))
+                        .foregroundStyle(Theme.inkSoft)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundStyle(Theme.ruleStrong)
+                    .accessibilityHidden(true)
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 8)
@@ -237,8 +244,9 @@ struct PlantPage: View {
             .padding(.bottom, 8)
     }
 
+    /// The plant's note or its growing note, its ranges read with "to" ("3 to 5 ft stalks").
     private func paragraph(_ text: String) -> some View {
-        Text(text)
+        Text(RangeText.display(text))
             .font(.body(17, .regular, relativeTo: .body))
             .foregroundStyle(Theme.ink)
             .lineSpacing(3)
