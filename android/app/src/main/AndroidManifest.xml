@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- The app asks for no permissions: everything it shows ships inside it.
+<!-- The app asks for two permissions, both granted at install with no prompt: the internet, to send the website's
+     allowed events and fetch newer plant data and photos (data only, never code), and the network state, to know
+     when the phone has signal.
      What it keeps (the county, the saved plants, the ticked jobs) stays on this phone: Android's backup to the
      person's Google account is off, and the extraction rules keep it out of a copy to a new phone as well, which
      Android 12 and later make whatever allowBackup says. On Android 8 to 11, allowBackup="false" alone stops both
@@ -7,6 +9,9 @@
      left to do. -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <application
         android:allowBackup="false"

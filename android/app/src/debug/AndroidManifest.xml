@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Debug builds only: the tests' stand-in website runs on the phone's own address, 127.0.0.1, without https.
+     The network security settings allow plain http to that one address and nowhere else. A Release build has
+     none of this, so every address needs https there. -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <application android:networkSecurityConfig="@xml/network_security_config_debug" />
+
+</manifest>

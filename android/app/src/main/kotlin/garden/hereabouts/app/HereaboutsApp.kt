@@ -19,7 +19,7 @@ fun HereaboutsApp(model: AppModel) {
     if (location == null) {
         FirstOpenPlaceholder()
     } else {
-        RootTabs()
+        RootTabs(model)
     }
 }
 

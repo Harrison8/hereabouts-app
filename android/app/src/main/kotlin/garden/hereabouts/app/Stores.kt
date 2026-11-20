@@ -1,7 +1,8 @@
 // What the app keeps on the phone, in one DataStore file, under the same keys and with the same meanings as the iPhone
 // app: the chosen county, the saved plants and this week's ticked garden jobs. Each is kept as JSON text. None of it
-// leaves the phone: the app sends nothing, and the manifest keeps it out of Android's backup and out of a copy to a
-// new phone.
+// leaves the phone as kept: events carry only the county's name, never the position, and the manifest keeps it out of
+// Android's backup and out of a copy to a new phone. The same file also holds the analytics id and the time of the
+// last data check.
 package garden.hereabouts.app
 
 import android.content.Context
