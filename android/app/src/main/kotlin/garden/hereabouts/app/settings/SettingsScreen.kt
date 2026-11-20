@@ -1,8 +1,8 @@
 // The Settings tab, as the approved picture draws it: the county with a Change button (which opens the first-open
 // screen as a page titled "Change location"), the Saturday reminders switch, the privacy policy and "How affiliate
 // links work" (both open in the phone's browser, never inside the app), the photo credits, and the app's version and
-// the date of the plant and seller data it is using. Rows are Material's list items, in groups with a thin rule round
-// them.
+// the date of the plant and seller data it is using. Rows are Material's list items, flat and full width, with one
+// full-width rule between groups and none inside them.
 @file:OptIn(ExperimentalMaterial3Api::class)
 
 package garden.hereabouts.app.settings
@@ -14,7 +14,6 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -31,13 +30,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.toggleable
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.automirrored.filled.OpenInNew
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -77,7 +73,9 @@ private const val PRIVACY_URL = "https://hereabouts.garden/privacy.html"
 private const val AFFILIATE_URL = "https://hereabouts.garden/affiliate-disclosure.html"
 
 private val RowText = TextStyle(fontFamily = Figtree, fontSize = 17.sp, lineHeight = 24.sp)
-private val Corner = RoundedCornerShape(4.dp)
+
+// The smaller text under a row's label: the reminders note, the version and the date of the data.
+private val Footnote = RowText.copy(fontSize = 15.sp, lineHeight = 20.sp)
 
 /**
  * The Settings tab's rows, under the tabs' own title bar. `onChangeLocation` opens the Change location page and
@@ -113,6 +111,7 @@ fun SettingsScreen(model: AppModel, onChangeLocation: () -> Unit, onPhotoCredits
             )
         }
 
+        GroupRule()
         GroupLabel("Reminders")
         Group {
             ListItem(
@@ -120,7 +119,7 @@ fun SettingsScreen(model: AppModel, onChangeLocation: () -> Unit, onPhotoCredits
                 supportingContent = {
                     Text(
                         "Each Saturday at 8:00 you’ll get the week’s garden jobs for the plants you saved.",
-                        style = RowText.copy(fontSize = 15.sp, lineHeight = 20.sp),
+                        style = Footnote,
                         color = Brand.inkSoft,
                     )
                 },
@@ -134,33 +133,29 @@ fun SettingsScreen(model: AppModel, onChangeLocation: () -> Unit, onPhotoCredits
             )
         }
 
+        GroupRule()
         GroupLabel("About Hereabouts")
         Group {
             OutsideLink("Privacy policy") { openInBrowser(context, PRIVACY_URL) }
-            HorizontalDivider(color = Brand.rule)
             OutsideLink("How affiliate links work") { openInBrowser(context, AFFILIATE_URL) }
-            HorizontalDivider(color = Brand.rule)
             ListItem(
                 headlineContent = { Text("Photo credits and licenses", style = RowText) },
-                trailingContent = {
-                    Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null, tint = Brand.inkSoft)
-                },
                 colors = rowColors(),
                 modifier = Modifier.clickable(onClick = onPhotoCredits),
             )
         }
 
+        GroupRule()
         GroupLabel("This app")
         Group {
             ListItem(
                 headlineContent = { Text("Version", style = RowText) },
-                trailingContent = { Text(version, style = RowText, color = Brand.inkSoft) },
+                supportingContent = { Text(version, style = Footnote, color = Brand.inkSoft) },
                 colors = rowColors(),
             )
-            HorizontalDivider(color = Brand.rule)
             ListItem(
                 headlineContent = { Text("Plant and seller data", style = RowText) },
-                trailingContent = { Text(dataDay(data.version.dataDate), style = RowText, color = Brand.inkSoft) },
+                supportingContent = { Text(dataDay(data.version.dataDate), style = Footnote, color = Brand.inkSoft) },
                 colors = rowColors(),
             )
         }
@@ -182,23 +177,21 @@ private fun GroupLabel(text: String) {
         style = RowText.copy(fontSize = 15.sp, lineHeight = 20.sp, fontWeight = FontWeight.SemiBold),
         color = Brand.inkSoft,
         modifier = Modifier
-            .padding(start = 32.dp, end = 32.dp, top = 24.dp, bottom = 8.dp)
+            .padding(start = 16.dp, end = 16.dp, top = 20.dp, bottom = 4.dp)
             .semantics { heading() },
     )
 }
 
-/** A group of rows with a thin rule round it and 4 dp corners. */
+/** A group's rows, flat and full width. */
 @Composable
 private fun Group(content: @Composable () -> Unit) {
-    Column(
-        Modifier
-            .padding(horizontal = 16.dp)
-            .fillMaxWidth()
-            .border(1.dp, Brand.rule, Corner)
-            .padding(1.dp),
-    ) {
-        content()
-    }
+    Column(Modifier.fillMaxWidth()) { content() }
+}
+
+/** The full-width rule between two groups. */
+@Composable
+private fun GroupRule() {
+    HorizontalDivider(Modifier.padding(top = 8.dp), color = Brand.rule)
 }
 
 /** A row that opens a page of the website in the phone's browser. */
@@ -251,8 +244,8 @@ private fun Page(
 }
 
 /**
- * The first-open screen without its wordmark, title and lede, to choose another county. The close button, Back, or
- * leaving the page stops any lookup still waiting, so its answer sets nothing.
+ * The first-open screen without its wordmark, title and lede, to choose another county. The back arrow, the phone's
+ * Back, or leaving the page stops any lookup still waiting, so its answer sets nothing.
  */
 @Composable
 fun ChangeLocationPage(model: AppModel, onClose: () -> Unit) {
@@ -260,7 +253,7 @@ fun ChangeLocationPage(model: AppModel, onClose: () -> Unit) {
     Page(
         title = "Change location",
         navigationIcon = {
-            IconButton(onClick = onClose) { Icon(Icons.Filled.Close, contentDescription = "Cancel") }
+            IconButton(onClick = onClose) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back") }
         },
     ) { padding ->
         FirstOpenScreen(

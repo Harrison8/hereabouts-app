@@ -69,7 +69,6 @@ class MyLocation(private val context: Context, private val askPermission: suspen
     private suspend fun find(): Outcome {
         if (!allowed() && !askPermission()) return Outcome.Denied
         if (!allowed()) return Outcome.Denied
-        standInPosition()?.let { (lat, lon) -> return Outcome.Position(lat, lon) }
         val manager = context.getSystemService(LocationManager::class.java) ?: return Outcome.Unavailable
         if (!LocationManagerCompat.isLocationEnabled(manager)) return Outcome.Unavailable
         // The providers this app may use with the rough location, best first. Google's combined provider exists from

@@ -175,7 +175,7 @@ object FirstOpenLookup {
 /**
  * The website's superseded(): every lookup takes a new number, and a lookup whose number is no longer the latest sets
  * nothing and sends nothing. The number moves on when another lookup starts, when what was typed changes, and when the
- * screen closes (Cancel on the Change location page).
+ * screen closes (the back arrow on the Change location page).
  */
 class LatestLookup {
     private val latest = AtomicInteger(0)
