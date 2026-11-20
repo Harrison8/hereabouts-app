@@ -17,6 +17,7 @@ import garden.hereabouts.core.DataVersion
 import garden.hereabouts.core.EventValue
 import garden.hereabouts.core.Location
 import garden.hereabouts.core.Tables
+import java.io.IOException
 import java.time.ZonedDateTime
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -25,10 +26,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.int
-import kotlinx.serialization.json.jsonObject
-import kotlinx.serialization.json.jsonPrimitive
 
 /**
  * The shared model. `kept` is what the phone had kept when the app started; changes are shown at once and written
@@ -162,13 +159,8 @@ class AppModel(
 
         /** The version of the data the app ships with, or null if its version.json does not read. */
         private fun shippedVersion(context: Context): DataVersion? = try {
-            val o = Json.parseToJsonElement(assetReader(context, "data")("version.json")).jsonObject
-            DataVersion(
-                schema = o.getValue("schema").jsonPrimitive.int,
-                dataDate = o.getValue("dataDate").jsonPrimitive.content,
-                dataHash = o.getValue("dataHash").jsonPrimitive.content,
-            )
-        } catch (e: Exception) {
+            DataUpdater.readVersion(context.assets.open("data/version.json").use { it.readBytes() })
+        } catch (e: IOException) {
             null
         }
 
