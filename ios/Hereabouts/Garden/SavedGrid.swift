@@ -256,7 +256,8 @@ private final class RowFrame {
 /// scroll view keeps the page from scrolling, so there the swipe is UIKit's pan, which only starts when the finger
 /// moves more sideways than up or down. iOS 17 keeps SwiftUI's drag, which scrolls alongside.
 private struct SidewaysSwipe: ViewModifier {
-    /// When false, the iOS 18 pan is left off entirely. The iOS 17 drag belongs to the row alone, so it stays.
+    /// When false, the iOS 18 pan is switched off and takes no touch at all. The iOS 17 drag belongs to the row alone,
+    /// so it stays.
     let on: Bool
     /// Where the row is on the screen. The iOS 18 pan ignores a finger that starts anywhere else.
     let frame: RowFrame
@@ -273,14 +274,9 @@ private struct SidewaysSwipe: ViewModifier {
 
     func body(content: Content) -> some View {
         if #available(iOS 18.0, *) {
-            Group {
-                if on {
-                    content.gesture(SidewaysPan(frame: frame, changed: changed, ended: ended))
-                } else {
-                    content
-                }
-            }
-            .onChange(of: on, initial: true) { _, now in NSLog("HBDIAG swipe on=\(now)") }
+            // Always attached and switched on or off, rather than added and taken away: SwiftUI may attach the pan to a
+            // view shared with the other tabs, and a switched-off pan is sure to take no touch there.
+            content.gesture(SidewaysPan(on: on, frame: frame, changed: changed, ended: ended))
         } else {
             content
                 .simultaneousGesture(
@@ -312,6 +308,7 @@ private struct SidewaysSwipe: ViewModifier {
 
 @available(iOS 18.0, *)
 private struct SidewaysPan: UIGestureRecognizerRepresentable {
+    let on: Bool
     let frame: RowFrame
     let changed: (CGFloat) -> Void
     let ended: (CGFloat, Bool) -> Void
@@ -321,13 +318,18 @@ private struct SidewaysPan: UIGestureRecognizerRepresentable {
     func makeUIGestureRecognizer(context: Context) -> UIPanGestureRecognizer {
         let pan = UIPanGestureRecognizer()
         pan.delegate = context.coordinator
-        NSLog("HBDIAG pan made")
+        context.coordinator.on = on
+        pan.isEnabled = on
         return pan
+    }
+
+    func updateUIGestureRecognizer(_ recognizer: UIPanGestureRecognizer, context: Context) {
+        context.coordinator.on = on
+        recognizer.isEnabled = on
     }
 
     func handleUIGestureRecognizerAction(_ recognizer: UIPanGestureRecognizer, context: Context) {
         let dx = recognizer.translation(in: recognizer.view).x
-        NSLog("HBDIAG pan state=\(recognizer.state.rawValue) dx=\(dx)")
         switch recognizer.state {
         case .began, .changed: changed(dx)
         case .ended: ended(dx, true)
@@ -340,19 +342,17 @@ private struct SidewaysPan: UIGestureRecognizerRepresentable {
     @MainActor
     final class Coordinator: NSObject, UIGestureRecognizerDelegate {
         let frame: RowFrame
+        /// Whether the pan is switched on: the Garden tab is showing with no plant page open over it.
+        var on = false
 
         init(frame: RowFrame) { self.frame = frame }
 
-        /// Takes only a finger that starts on its own row. SwiftUI may attach the pan to a view that holds more than
-        /// the row, so without this a swipe elsewhere on the screen could slide or remove the row.
+        /// Takes only a finger that starts on its own row, and only while switched on. SwiftUI may attach the pan to a
+        /// view that holds more than the row, so without this a touch elsewhere on the screen could reach it. Before
+        /// the row has a place on the screen, it takes nothing.
         func gestureRecognizer(_ recognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
             let rect = frame.rect
-            let answer = rect.isEmpty || rect.contains(touch.location(in: nil))
-            let host = recognizer.view.map { "\(type(of: $0)) \($0.frame)" } ?? "none"
-            let hit = touch.view.map { "\(type(of: $0))" } ?? "none"
-            let others = (touch.gestureRecognizers ?? []).map { "\(type(of: $0))" }.joined(separator: ",")
-            NSLog("HBDIAG receive at=\(touch.location(in: nil)) rect=\(rect) answer=\(answer) host=\(host) hit=\(hit) others=\(others)")
-            return answer
+            return on && !rect.isEmpty && rect.contains(touch.location(in: nil))
         }
 
         /// Starts only when the finger moves more sideways than up or down.

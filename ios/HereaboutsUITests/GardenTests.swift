@@ -288,12 +288,28 @@ final class GardenTests: XCTestCase {
         XCTAssertEqual(toggle.value as? String, "1", "Saturday reminders start off")
         // The switch itself at the row's right end, not the middle of the row's label.
         toggle.coordinate(withNormalizedOffset: CGVector(dx: 0.93, dy: 0.5)).tap()
-        let turnedOff = StubServer.wait(5) { toggle.value as? String == "0" }
-        attachScreenshot(app, "HBDIAG Settings, switch tapped")
-        if !turnedOff { print("HBDIAG switch frame \(toggle.frame)\n\(app.debugDescription)") }
-        XCTAssertTrue(turnedOff, "The switch did not turn off")
+        XCTAssertTrue(StubServer.wait(5) { toggle.value as? String == "0" }, "The switch did not turn off")
         XCTAssertTrue(StubServer.wait(15) { self.latestWaiting == [] },
                       "Turning reminders off left \(latestWaiting ?? []) waiting")
+    }
+
+    /// With plants saved, the reminders switch in Settings answers every tap, however often the person goes back to
+    /// the Garden tab between taps.
+    @MainActor
+    func testTheRemindersSwitchAnswersEachTimeAfterTheGardenTab() throws {
+        let app = launch(now: "2027-10-02T12:00", saved: ["asclepias-tuberosa", "lindera-benzoin"], notifications: "allowed")
+        XCTAssertTrue(element(app, "saved-lindera-benzoin").waitForExistence(timeout: 10), "The saved plants are not listed")
+        let tabs = app.tabBars.firstMatch
+        for (round, want) in ["0", "1", "0"].enumerated() {
+            tabs.buttons["Settings"].tap()
+            let toggle = app.switches["Saturday reminders"]
+            XCTAssertTrue(toggle.waitForExistence(timeout: 10), "No Saturday reminders switch")
+            toggle.coordinate(withNormalizedOffset: CGVector(dx: 0.93, dy: 0.5)).tap()
+            XCTAssertTrue(StubServer.wait(5) { toggle.value as? String == want },
+                          "Tap \(round + 1) on the switch did nothing: it still reads \(toggle.value ?? "")")
+            tabs.buttons["Garden"].tap()
+            XCTAssertTrue(app.navigationBars["My garden"].waitForExistence(timeout: 10), "Could not go back to the Garden tab")
+        }
     }
 
     /// Swiping a saved plant to the left shows a red Remove button and leaves the Garden tab open; tapping the button
