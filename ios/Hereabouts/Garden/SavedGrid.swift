@@ -294,6 +294,7 @@ private struct SidewaysSwipe: ViewModifier {
             // Always attached and switched on or off, rather than added and taken away: SwiftUI may attach the pan to a
             // view shared with the other tabs, and a switched-off pan is sure to take no touch there.
             content.gesture(SidewaysPan(on: on, frame: frame, changed: changed, ended: ended))
+                .onAppear { if SwipeDiagnosis.log { NSLog("%@", "HBDIAG swipe shown on=\(on)") } }
         } else {
             content
                 .simultaneousGesture(

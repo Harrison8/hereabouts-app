@@ -1,14 +1,10 @@
-// Temporary: the Garden test that turns Saturday reminders off in Settings, run in six ways to find why a tap on the
+// Temporary: the Garden test that turns Saturday reminders off in Settings, run in two ways to find why a tap on the
 // switch sometimes does nothing after the app is left and reopened. The build machine runs this class on its own,
-// three times over, after the other screen tests. Every launch adds -uiTestTouchLog, so the app writes each touch and
-// the gesture recognizers it meets to the phone's log, which the build machine saves. Each test prints one line
-// starting "DIAG" with its outcome.
+// many times over, after the other screen tests. Every launch adds -uiTestTouchLog, so the app writes each touch, when
+// the phone stamped it and when the app was handed it, and each time its main thread was busy, to the phone's log,
+// which the build machine saves. Each test prints lines starting "DIAG" with its outcome.
 // - a: the saved plants listed with no swipe at all (-uiTestNoSwipe);
-// - b: 5 seconds' wait after reopening, before the tap;
-// - c: a second tap when the first does nothing;
-// - d: two plants saved, with the leave-and-reopen;
-// - e: four plants saved, without the leave-and-reopen;
-// - z: the Garden test's own steps, as a comparison.
+// - d: two plants saved, with the leave-and-reopen.
 import XCTest
 
 final class RemindersSwitchDiagnosisTests: XCTestCase {
@@ -28,11 +24,7 @@ final class RemindersSwitchDiagnosisTests: XCTestCase {
     }
 
     @MainActor func testA_NoSwipe() throws { try check("a", saved: Self.four, extra: ["-uiTestNoSwipe"]) }
-    @MainActor func testB_LateTap() throws { try check("b", saved: Self.four, settle: 5) }
-    @MainActor func testC_SecondTap() throws { try check("c", saved: Self.four, secondTap: true) }
     @MainActor func testD_TwoPlants() throws { try check("d", saved: Self.two) }
-    @MainActor func testE_NoLeaving() throws { try check("e", saved: Self.four, leave: false) }
-    @MainActor func testZ_Comparison() throws { try check("z", saved: Self.four) }
 
     /// How many times the app has reported its waiting reminders.
     private var reports: Int {
