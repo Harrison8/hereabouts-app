@@ -34,6 +34,7 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
@@ -45,6 +46,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import garden.hereabouts.app.Brand
 import garden.hereabouts.app.Figtree
+import garden.hereabouts.app.R
 import garden.hereabouts.app.plants.isLargeText
 import garden.hereabouts.app.plants.readPhoto
 import garden.hereabouts.app.services.PhotoCache
@@ -66,6 +68,7 @@ private val seasonWords = mapOf(
 @Composable
 fun PhotoPager(plant: Plant, photos: PhotoCache?) {
     val shots = remember(plant) { Labels.photos(plant) }
+    val noPhotoSpoken = stringResource(R.string.no_photo_spoken, plant.common)
     if (shots.isEmpty()) {
         Box(
             Modifier
@@ -73,7 +76,7 @@ fun PhotoPager(plant: Plant, photos: PhotoCache?) {
                 .aspectRatio(4f / 3f)
                 .background(Brand.surface)
                 .testTag("noPhoto")
-                .clearAndSetSemantics { contentDescription = "${plant.common}: no photograph yet" },
+                .clearAndSetSemantics { contentDescription = noPhotoSpoken },
             contentAlignment = Alignment.Center,
         ) {
             NoPhotoPlate(15.sp)
@@ -190,7 +193,7 @@ private sealed interface Shown {
 @Composable
 internal fun NoPhotoPlate(size: TextUnit) {
     Text(
-        "No photograph yet",
+        stringResource(R.string.no_photo),
         style = TextStyle(fontFamily = Figtree, fontSize = size, color = Brand.inkSoft, textAlign = TextAlign.Center),
         modifier = Modifier.padding(4.dp),
     )

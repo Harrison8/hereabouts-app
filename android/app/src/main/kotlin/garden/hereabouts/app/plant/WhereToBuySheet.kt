@@ -44,6 +44,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
@@ -56,6 +57,7 @@ import androidx.compose.ui.unit.sp
 import garden.hereabouts.app.AppModel
 import garden.hereabouts.app.Brand
 import garden.hereabouts.app.Figtree
+import garden.hereabouts.app.R
 import garden.hereabouts.app.YoungSerif
 import garden.hereabouts.app.openDirections
 import garden.hereabouts.app.openInBrowser
@@ -121,7 +123,7 @@ private fun Header(summary: String?, onDone: () -> Unit) {
     ) {
         Column(Modifier.weight(1f).padding(top = 6.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text(
-                "Where to buy",
+                stringResource(R.string.where_to_buy),
                 style = TextStyle(fontFamily = YoungSerif, fontSize = 22.sp, lineHeight = 28.sp, color = Brand.ink),
                 modifier = Modifier.semantics { heading() },
             )
@@ -137,7 +139,7 @@ private fun Header(summary: String?, onDone: () -> Unit) {
             onClick = onDone,
             modifier = Modifier.heightIn(min = 48.dp).widthIn(min = 48.dp).testTag("whereToBuyDone"),
         ) {
-            Text("Done", style = NameStyle.copy(color = Brand.moss))
+            Text(stringResource(R.string.done), style = NameStyle.copy(color = Brand.moss))
         }
     }
 }
@@ -146,6 +148,7 @@ private fun Header(summary: String?, onDone: () -> Unit) {
 private fun SellerRow(model: AppModel, plant: Plant, row: BuyRow, location: Location?, large: Boolean) {
     val context = LocalContext.current
     val directions = row.directions
+    val directionsSpoken = stringResource(R.string.directions_to, row.name)
     if (row.kind == "directions" && directions != null && hasPlace(directions)) {
         val info = @Composable { m: Modifier -> Info(row, location, m.testTag("seller").semantics(mergeDescendants = true) {}) }
         val button = @Composable {
@@ -163,9 +166,9 @@ private fun SellerRow(model: AppModel, plant: Plant, row: BuyRow, location: Loca
                 modifier = Modifier
                     .heightIn(min = 48.dp)
                     .testTag("directions")
-                    .semantics { contentDescription = "Directions to ${row.name}" },
+                    .semantics { contentDescription = directionsSpoken },
             ) {
-                Text("Directions", style = NameStyle.copy(fontSize = 16.sp, color = Brand.moss))
+                Text(stringResource(R.string.directions), style = NameStyle.copy(fontSize = 16.sp, color = Brand.moss))
             }
         }
         val frame = Modifier.fillMaxWidth().heightIn(min = 64.dp).padding(horizontal = 16.dp, vertical = 8.dp)
@@ -214,7 +217,7 @@ private fun SellerRow(model: AppModel, plant: Plant, row: BuyRow, location: Loca
             Box(Modifier.size(48.dp), contentAlignment = Alignment.Center) {
                 Icon(
                     Icons.AutoMirrored.Filled.OpenInNew,
-                    contentDescription = "Opens outside the app",
+                    contentDescription = stringResource(R.string.opens_outside),
                     tint = if (url == null) Brand.ruleStrong else Brand.moss,
                 )
             }
@@ -239,7 +242,7 @@ private fun CommissionNote(modifier: Modifier) {
     Column(modifier.fillMaxWidth()) {
         Box(Modifier.fillMaxWidth().height(1.dp).background(Brand.rule))
         Text(
-            "Each link opens in your browser. Some of these links earn us a commission.",
+            stringResource(R.string.commission_note),
             style = TextStyle(fontFamily = Figtree, fontSize = 13.sp, lineHeight = 18.sp, color = Brand.inkSoft),
             modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 10.dp).testTag("commissionNote"),
         )
@@ -252,7 +255,7 @@ private fun CommissionNote(modifier: Modifier) {
             horizontalArrangement = Arrangement.spacedBy(4.dp),
         ) {
             Text(
-                "How this works",
+                stringResource(R.string.how_this_works),
                 style = TextStyle(
                     fontFamily = Figtree,
                     fontSize = 15.sp,
@@ -263,7 +266,7 @@ private fun CommissionNote(modifier: Modifier) {
             )
             Icon(
                 Icons.AutoMirrored.Filled.OpenInNew,
-                contentDescription = "Opens outside the app",
+                contentDescription = stringResource(R.string.opens_outside),
                 tint = Brand.moss,
                 modifier = Modifier.size(icon),
             )

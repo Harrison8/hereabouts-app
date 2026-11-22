@@ -43,6 +43,7 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
@@ -64,6 +65,7 @@ import garden.hereabouts.app.AppModel
 import garden.hereabouts.app.Brand
 import garden.hereabouts.app.CountyLine
 import garden.hereabouts.app.Figtree
+import garden.hereabouts.app.R
 import garden.hereabouts.app.TicksStore
 import garden.hereabouts.app.YoungSerif
 import garden.hereabouts.app.plants.isLargeText
@@ -149,18 +151,20 @@ private fun EmptyState(willCome: Boolean, notAsked: Boolean, onBrowsePlants: () 
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         Text(
-            "No plants saved yet",
+            stringResource(R.string.garden_empty_title),
             style = TitleStyle,
             textAlign = TextAlign.Center,
             modifier = Modifier.testTag("gardenEmpty").semantics { heading() },
         )
         // The Saturday sentence only while a reminder will come: not with the switch off in Settings, and not when
         // the phone has refused the app's notifications.
-        val saturday = if (willCome) " Each Saturday at 8:00 you’ll get the week’s garden jobs for the plants you saved." else ""
+        val saturday = if (willCome) " " + stringResource(R.string.reminder_sentence) else ""
+        val tapSpoken = stringResource(R.string.garden_empty_tap_spoken, saturday)
+        val tapParts = stringResource(R.string.garden_empty_tap, "@@", saturday).split("@@")
         val note = buildAnnotatedString {
-            append("Tap ")
+            append(tapParts[0])
             appendInlineContent("bookmark", "save")
-            append(" on any plant to save it here.$saturday")
+            append(tapParts[1])
         }
         val bookmark = mapOf(
             "bookmark" to InlineTextContent(Placeholder(1.em, 1.em, PlaceholderVerticalAlign.TextCenter)) {
@@ -174,7 +178,7 @@ private fun EmptyState(willCome: Boolean, notAsked: Boolean, onBrowsePlants: () 
             textAlign = TextAlign.Center,
             modifier = Modifier
                 .testTag("gardenEmptyNote")
-                .clearAndSetSemantics { contentDescription = "Tap the save button on any plant to save it here.$saturday" },
+                .clearAndSetSemantics { contentDescription = tapSpoken },
         )
         Box(
             Modifier
@@ -187,11 +191,11 @@ private fun EmptyState(willCome: Boolean, notAsked: Boolean, onBrowsePlants: () 
                 .padding(horizontal = 32.dp, vertical = 12.dp),
             contentAlignment = Alignment.Center,
         ) {
-            Text("Browse plants", style = BodyStyle.copy(color = Color.White, fontWeight = FontWeight.SemiBold))
+            Text(stringResource(R.string.browse_plants), style = BodyStyle.copy(color = Color.White, fontWeight = FontWeight.SemiBold))
         }
         if (notAsked) {
             Text(
-                "The phone asks if Hereabouts may send reminders when you save your first plant.",
+                stringResource(R.string.garden_ask_permission),
                 style = SmallStyle,
                 textAlign = TextAlign.Center,
             )
@@ -208,7 +212,7 @@ private fun ThisWeek(
     open: (String) -> Unit,
 ) {
     val large = isLargeText()
-    val title = @Composable { Text("This week", style = TitleStyle, modifier = Modifier.semantics { heading() }) }
+    val title = @Composable { Text(stringResource(R.string.this_week), style = TitleStyle, modifier = Modifier.semantics { heading() }) }
     val dates = @Composable { Text(week.datesLabel, style = BodyStyle.copy(color = Brand.inkSoft), modifier = Modifier.testTag("thisWeekDates")) }
     val headerPadding = Modifier.padding(start = 16.dp, end = 16.dp, top = 32.dp, bottom = 4.dp)
     if (large) {
@@ -226,7 +230,7 @@ private fun ThisWeek(
 
     if (week.rows.isNotEmpty()) {
         Text(
-            "${week.rows.count { it.id in ticked }} of ${week.rows.size} done",
+            stringResource(R.string.done_count, week.rows.count { it.id in ticked }, week.rows.size),
             style = SmallStyle.copy(fontWeight = FontWeight.Medium),
             modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 8.dp).testTag("doneCount"),
         )
@@ -241,7 +245,7 @@ private fun ThisWeek(
     ) {
         if (week.rows.isEmpty()) {
             Text(
-                "Nothing to do this week.",
+                stringResource(R.string.nothing_this_week_full),
                 style = BodyStyle.copy(color = Brand.inkSoft),
                 modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp).padding(16.dp),
             )
@@ -266,7 +270,7 @@ private fun JobRow(row: WeekRow, subline: String, done: Boolean, large: Boolean,
     Row(verticalAlignment = if (large) Alignment.Top else Alignment.CenterVertically) {
         TickCircle(
             done = done,
-            label = "Tick off: ${row.heading}",
+            label = stringResource(R.string.tick_off, row.heading),
             toggle = toggle,
             modifier = Modifier.padding(start = 4.dp, top = if (large) 8.dp else 0.dp).testTag("tick-${row.id}"),
         )
@@ -299,13 +303,14 @@ private fun JobRow(row: WeekRow, subline: String, done: Boolean, large: Boolean,
  */
 @Composable
 internal fun TickCircle(done: Boolean, label: String, toggle: () -> Unit, modifier: Modifier = Modifier) {
+    val state = stringResource(if (done) R.string.done else R.string.not_done)
     Box(
         modifier
             .size(48.dp)
             .toggleable(value = done, role = Role.Checkbox, onValueChange = { toggle() })
             .clearAndSetSemantics {
                 contentDescription = label
-                stateDescription = if (done) "Done" else "Not done"
+                stateDescription = state
                 role = Role.Checkbox
             },
         contentAlignment = Alignment.Center,

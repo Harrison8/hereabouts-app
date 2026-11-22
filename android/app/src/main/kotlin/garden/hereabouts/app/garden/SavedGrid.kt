@@ -54,6 +54,7 @@ import androidx.compose.ui.input.pointer.positionChange
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
@@ -69,6 +70,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.max
 import androidx.compose.ui.unit.sp
 import garden.hereabouts.app.Brand
+import garden.hereabouts.app.R
 import garden.hereabouts.app.plants.PlantThumbnail
 import garden.hereabouts.app.plants.isLargeText
 import garden.hereabouts.app.services.PhotoCache
@@ -98,16 +100,17 @@ fun SavedGrid(
     // The plant whose row is swiped open, if any. Opening one row closes the others.
     var openId by remember { mutableStateOf<String?>(null) }
     val large = isLargeText()
+    val countSpoken = pluralStringOrOne(plants.size)
     Column(modifier) {
         Row(Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, bottom = 12.dp), verticalAlignment = Alignment.Bottom) {
-            Text("Saved plants", style = TitleStyle, modifier = Modifier.semantics { heading() })
+            Text(stringResource(R.string.saved_plants), style = TitleStyle, modifier = Modifier.semantics { heading() })
             Spacer(Modifier.weight(1f).widthIn(min = 12.dp))
             Text(
                 "${plants.size}",
                 style = BodyStyle.copy(color = Brand.inkSoft),
                 modifier = Modifier
                     .testTag("savedCount")
-                    .clearAndSetSemantics { contentDescription = if (plants.size == 1) "1 plant" else "${plants.size} plants" },
+                    .clearAndSetSemantics { contentDescription = countSpoken },
             )
         }
         Column(
@@ -144,15 +147,21 @@ fun SavedGrid(
     }
 }
 
+@Composable
+private fun pluralStringOrOne(count: Int): String =
+    if (count == 1) stringResource(R.string.one_plant) else stringResource(R.string.n_plants, count)
+
+@Composable
 private fun jobsLine(count: Int): String = when (count) {
-    0 -> "Nothing to do this week"
-    1 -> "1 job this week"
-    else -> "$count jobs this week"
+    0 -> stringResource(R.string.jobs_none)
+    1 -> stringResource(R.string.jobs_one)
+    else -> stringResource(R.string.jobs_many, count)
 }
 
 @Composable
 private fun PlantRow(plant: Plant, photos: PhotoCache?, jobs: Int, large: Boolean, onTap: () -> Unit, onRemove: () -> Unit) {
     val line = jobsLine(jobs)
+    val removeLabel = stringResource(R.string.remove)
     val words = @Composable { m: Modifier ->
         Column(m, verticalArrangement = Arrangement.spacedBy(2.dp)) {
             Text(plant.common, style = TitleStyle.copy(fontSize = 20.sp, lineHeight = 26.sp))
@@ -174,7 +183,7 @@ private fun PlantRow(plant: Plant, photos: PhotoCache?, jobs: Int, large: Boolea
             .clearAndSetSemantics {
                 contentDescription = "${plant.common}, ${plant.sci}, $line"
                 role = Role.Button
-                customActions = listOf(CustomAccessibilityAction("Remove") { onRemove(); true })
+                customActions = listOf(CustomAccessibilityAction(removeLabel) { onRemove(); true })
             }
             .padding(16.dp, 12.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -324,6 +333,7 @@ private fun SwipeToRemove(
         }
     }
 
+    val removeSpoken = stringResource(R.string.remove)
     Box(Modifier.fillMaxWidth().onSizeChanged { width = it.width }.then(swipe)) {
         if (offset < 0f) {
             Box(Modifier.matchParentSize(), contentAlignment = Alignment.CenterEnd) {
@@ -336,7 +346,7 @@ private fun SwipeToRemove(
                         .testTag("remove-$id")
                         .clickable(role = Role.Button) { removeNow() }
                         .clearAndSetSemantics {
-                            contentDescription = "Remove"
+                            contentDescription = removeSpoken
                             role = Role.Button
                         },
                     contentAlignment = Alignment.Center,

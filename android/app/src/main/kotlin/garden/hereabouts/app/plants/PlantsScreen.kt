@@ -53,6 +53,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -64,6 +65,7 @@ import garden.hereabouts.app.AppModel
 import garden.hereabouts.app.Brand
 import garden.hereabouts.app.CountyLine
 import garden.hereabouts.app.Figtree
+import garden.hereabouts.app.R
 import garden.hereabouts.core.AppData
 import garden.hereabouts.core.EventValue
 import garden.hereabouts.core.FilterState
@@ -148,7 +150,7 @@ fun PlantsScreen(
         containerColor = Brand.ground,
         topBar = {
             LargeTopAppBar(
-                title = { Text("Plants", modifier = Modifier.testTag("title")) },
+                title = { Text(stringResource(R.string.tab_plants), modifier = Modifier.testTag("title")) },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = Brand.ground,
                     scrolledContainerColor = Brand.ground,
@@ -179,7 +181,7 @@ fun PlantsScreen(
             item(key = "head-search") {
                 SearchField(
                     query = filter.search,
-                    placeholder = "Search $nativeCount plants",
+                    placeholder = stringResource(R.string.search_plants, nativeCount),
                     onQuery = { choices.filter = choices.filter.copy(search = it) },
                     onSearch = {
                         focus.clearFocus()
@@ -284,7 +286,7 @@ private fun County(loc: Location, onChangeLocation: () -> Unit) {
             Modifier
                 .fillMaxWidth()
                 .heightIn(min = 48.dp)
-                .clickable(role = Role.Button, onClickLabel = "Change location", onClick = onChangeLocation)
+                .clickable(role = Role.Button, onClickLabel = stringResource(R.string.change_location), onClick = onChangeLocation)
                 .testTag("plantsCounty"),
             contentAlignment = Alignment.CenterStart,
         ) {
@@ -341,16 +343,16 @@ private fun TypeChips(
     Box(Modifier.padding(top = 4.dp)) {
         ChipRow(large) {
             BrandChip(
-                label = "Filters",
+                label = stringResource(R.string.filters),
                 count = if (panel == 0) null else panel,
                 selected = panel > 0,
-                spokenValue = if (panel == 0) null else "$panel chosen",
+                spokenValue = if (panel == 0) null else stringResource(R.string.n_chosen, panel),
                 onClick = onFilters,
                 icon = { Icon(Icons.Filled.FilterList, contentDescription = null, modifier = Modifier.size(iconSize)) },
                 modifier = Modifier.testTag("filtersChip"),
             )
             BrandChip(
-                label = "All",
+                label = stringResource(R.string.all),
                 count = passing.size,
                 selected = st.category.isEmpty(),
                 onClick = { onCategory(emptySet()) },

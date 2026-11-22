@@ -54,6 +54,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
@@ -68,6 +69,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import garden.hereabouts.app.AppModel
 import garden.hereabouts.app.Brand
 import garden.hereabouts.app.Figtree
+import garden.hereabouts.app.R
 import garden.hereabouts.app.YoungSerif
 import garden.hereabouts.app.openInBrowser
 import garden.hereabouts.app.plants.isLargeText
@@ -106,6 +108,8 @@ fun PlantScreen(
     val location by model.location.collectAsStateWithLifecycle()
     val saved by model.saved.collectAsStateWithLifecycle()
     val isSaved = plant.id in saved
+    val savedState = stringResource(if (isSaved) R.string.saved else R.string.not_saved)
+    val savePlantSpoken = stringResource(R.string.save_plant, plant.common)
     val buy = remember(plant, location, data) { Sellers.buyView(plant, location, Channel.App, data) }
     val facts = remember(plant) { Labels.growingFacts(plant) }
     var buying by rememberSaveable(plant.id) { mutableStateOf(false) }
@@ -134,7 +138,7 @@ fun PlantScreen(
                 title = {},
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 },
                 actions = {
@@ -143,12 +147,12 @@ fun PlantScreen(
                         onCheckedChange = { model.pressSave(plant.id) },
                         modifier = Modifier
                             .size(48.dp)
-                            .semantics { stateDescription = if (isSaved) "Saved" else "Not saved" }
+                            .semantics { stateDescription = savedState }
                             .testTag("toolbarSave"),
                     ) {
                         Icon(
                             if (isSaved) Icons.Filled.Bookmark else Icons.Outlined.BookmarkBorder,
-                            contentDescription = "Save ${plant.common}",
+                            contentDescription = savePlantSpoken,
                             tint = if (isSaved) Brand.moss else Brand.ink,
                         )
                     }
@@ -169,17 +173,17 @@ fun PlantScreen(
                 Buttons(plant, isSaved, onSave = { model.pressSave(plant.id) }, onBuy = { buying = true })
                 if (facts.quick.isNotEmpty()) FactGrid(facts.quick, Modifier.padding(top = 16.dp))
                 plant.notes?.takeIf { it.isNotEmpty() }?.let { Paragraph(it, Modifier.padding(top = 24.dp)) }
-                Heading("Through the year")
+                Heading(stringResource(R.string.through_the_year))
                 SeasonChart(plant)
                 val more = facts.flowers + facts.more
                 if (more.isNotEmpty()) FactList(more, Modifier.padding(top = 24.dp))
                 BuyRow(buySubtitle(buy, location), onClick = { buying = true }, modifier = Modifier.padding(top = 16.dp))
                 plant.maturity?.notes?.takeIf { it.isNotEmpty() }?.let { care ->
-                    Heading("How to grow it")
+                    Heading(stringResource(R.string.how_to_grow))
                     Paragraph(care)
                 }
                 data.geo[plant.id]?.let { geo ->
-                    Heading("Where it grows wild")
+                    Heading(stringResource(R.string.where_grows_wild))
                     RangeMap(plant, geo.eco, location, Modifier.padding(top = 4.dp))
                 }
                 plant.usda?.takeIf { it.isNotEmpty() }?.let { UsdaLine(it, Modifier.padding(top = 8.dp)) }
@@ -241,6 +245,8 @@ internal fun plantMeta(plant: Plant, location: Location?, geo: Map<String, Plant
 private fun Buttons(plant: Plant, isSaved: Boolean, onSave: () -> Unit, onBuy: () -> Unit) {
     val shape = RoundedCornerShape(4.dp)
     val icon = with(LocalDensity.current) { 20.sp.toDp() }
+    val savePlantSpoken = stringResource(R.string.save_plant, plant.common)
+    val savedState = stringResource(if (isSaved) R.string.saved else R.string.not_saved)
     val save = @Composable { m: Modifier ->
         OutlinedButton(
             onClick = onSave,
@@ -251,8 +257,8 @@ private fun Buttons(plant: Plant, isSaved: Boolean, onSave: () -> Unit, onBuy: (
             modifier = m
                 .heightIn(min = 50.dp)
                 .semantics {
-                    contentDescription = "Save ${plant.common}"
-                    stateDescription = if (isSaved) "Saved" else "Not saved"
+                    contentDescription = savePlantSpoken
+                    stateDescription = savedState
                 }
                 .testTag("pageSave"),
         ) {
@@ -261,7 +267,7 @@ private fun Buttons(plant: Plant, isSaved: Boolean, onSave: () -> Unit, onBuy: (
                 contentDescription = null,
                 modifier = Modifier.size(icon),
             )
-            Text(if (isSaved) "Saved" else "Save", style = ButtonText, modifier = Modifier.padding(start = 8.dp))
+            Text(stringResource(if (isSaved) R.string.saved else R.string.save), style = ButtonText, modifier = Modifier.padding(start = 8.dp))
         }
     }
     val where = @Composable { m: Modifier ->
@@ -272,7 +278,7 @@ private fun Buttons(plant: Plant, isSaved: Boolean, onSave: () -> Unit, onBuy: (
             colors = ButtonDefaults.buttonColors(containerColor = Brand.moss, contentColor = Brand.ground),
             modifier = m.heightIn(min = 50.dp).testTag("whereToBuy"),
         ) {
-            Text("Where to buy", style = ButtonText)
+            Text(stringResource(R.string.where_to_buy), style = ButtonText)
         }
     }
     if (isLargeText()) {
@@ -308,7 +314,7 @@ private fun BuyRow(subtitle: String, onClick: () -> Unit, modifier: Modifier) {
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-            Text("Where to buy", style = ButtonText.copy(color = Brand.ink))
+            Text(stringResource(R.string.where_to_buy), style = ButtonText.copy(color = Brand.ink))
             Text(
                 subtitle,
                 style = TextStyle(fontFamily = Figtree, fontSize = 14.sp, lineHeight = 19.sp, color = Brand.inkSoft),
@@ -348,7 +354,7 @@ private fun UsdaLine(usda: String, modifier: Modifier) {
             horizontalArrangement = Arrangement.spacedBy(4.dp),
         ) {
             Text(
-                "USDA plant profile",
+                stringResource(R.string.usda_profile),
                 style = TextStyle(
                     fontFamily = Figtree,
                     fontSize = 15.sp,
@@ -359,13 +365,13 @@ private fun UsdaLine(usda: String, modifier: Modifier) {
             )
             Icon(
                 Icons.AutoMirrored.Filled.OpenInNew,
-                contentDescription = "Opens outside the app",
+                contentDescription = stringResource(R.string.opens_outside),
                 tint = Brand.moss,
                 modifier = Modifier.size(icon),
             )
         }
         Text(
-            "No. $usda · Regions from the US EPA",
+            stringResource(R.string.usda_note, usda),
             style = TextStyle(fontFamily = Figtree, fontSize = 13.sp, lineHeight = 18.sp, color = Brand.inkSoft),
         )
     }

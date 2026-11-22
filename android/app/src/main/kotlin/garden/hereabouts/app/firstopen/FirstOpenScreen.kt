@@ -72,6 +72,7 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
@@ -195,9 +196,6 @@ class LatestLookup {
 
 private enum class Mode { Zip, Text }
 
-private const val DENIED_MESSAGE = "Hereabouts can't use your location. Try your 5-digit ZIP code instead."
-private const val UNAVAILABLE_MESSAGE = "We couldn't find your location. Try your 5-digit ZIP code instead."
-
 private val BodyText = TextStyle(fontFamily = Figtree, fontSize = 17.sp, lineHeight = 24.sp)
 private val Corner = RoundedCornerShape(4.dp)
 
@@ -264,6 +262,8 @@ fun FirstOpenScreen(model: AppModel, modifier: Modifier = Modifier, inSheet: Boo
     // A ZIP code needs a county found first. Typed text can also be looked up by the button itself.
     val buttonEnabled = !busy && (found != null || (mode == Mode.Text && outcome == null && text.isNotBlank()))
 
+    val deniedMessage = stringResource(R.string.location_refused)
+    val unavailableMessage = stringResource(R.string.location_unavailable)
     fun choose() {
         val chosen = outcome as? FirstOpenLookup.Outcome.Found ?: return
         focusManager.clearFocus()
@@ -293,8 +293,8 @@ fun FirstOpenScreen(model: AppModel, modifier: Modifier = Modifier, inSheet: Boo
             busy = false
             outcome = when (result) {
                 is MyLocation.Outcome.Position -> FirstOpenLookup.device(result.lat, result.lon, tables)
-                MyLocation.Outcome.Denied -> FirstOpenLookup.Outcome.Message(DENIED_MESSAGE)
-                MyLocation.Outcome.Unavailable -> FirstOpenLookup.Outcome.Message(UNAVAILABLE_MESSAGE)
+                MyLocation.Outcome.Denied -> FirstOpenLookup.Outcome.Message(deniedMessage)
+                MyLocation.Outcome.Unavailable -> FirstOpenLookup.Outcome.Message(unavailableMessage)
             }
         }
     }
@@ -329,7 +329,9 @@ fun FirstOpenScreen(model: AppModel, modifier: Modifier = Modifier, inSheet: Boo
     DisposableEffect(Unit) { onDispose { latest.supersede() } }
 
     val onButton = { if (found == null && mode == Mode.Text) lookUpText(thenChoose = true) else choose() }
-    val switchLabel = if (mode == Mode.Zip) "Use a town or street address instead" else "Use a ZIP code instead"
+    val switchLabel = stringResource(if (mode == Mode.Zip) R.string.switch_to_address else R.string.switch_to_zip)
+    val placeLabel = stringResource(R.string.town_or_address)
+    val zipLabel = stringResource(R.string.zip_code)
 
     Column(
         modifier
@@ -350,28 +352,25 @@ fun FirstOpenScreen(model: AppModel, modifier: Modifier = Modifier, inSheet: Boo
                 // The approved picture's wordmark, title and lede. Tapping them closes the number pad.
                 Column(Modifier.fillMaxWidth().pointerInput(Unit) { detectTapGestures { focusManager.clearFocus() } }) {
                     Column(Modifier.padding(top = 32.dp).onSizeChanged { headerHeight = it.height }) {
+                        val titleSpoken = stringResource(R.string.first_open_title_spoken)
                         Image(
                             painterResource(R.drawable.wordmark),
-                            contentDescription = "Hereabouts",
+                            contentDescription = stringResource(R.string.app_name),
                             modifier = Modifier.width(168.dp),
                         )
                         Spacer(Modifier.height(32.dp))
                         Text(
-                            "Native plants\nfor your county",
+                            stringResource(R.string.first_open_title),
                             style = TextStyle(fontFamily = YoungSerif, fontSize = 34.sp, lineHeight = 41.sp),
                             color = Brand.ink,
                             modifier = Modifier.semantics {
-                                contentDescription = "Native plants for your county"
+                                contentDescription = titleSpoken
                                 heading()
                             },
                         )
                     }
                     Text(
-                        if (mode == Mode.Zip) {
-                            "Enter your ZIP code to see the plants that grow wild where you live."
-                        } else {
-                            "Enter your town or street address to see the plants that grow wild where you live."
-                        },
+                        stringResource(if (mode == Mode.Zip) R.string.first_open_lede_zip else R.string.first_open_lede_address),
                         style = BodyText.copy(lineHeight = 26.sp),
                         color = Brand.inkSoft,
                         modifier = Modifier
@@ -395,7 +394,7 @@ fun FirstOpenScreen(model: AppModel, modifier: Modifier = Modifier, inSheet: Boo
             // The label, the field and the county found: always in view, above the button.
             Column(Modifier.onSizeChanged { fieldsHeight = it.height }) {
                 Text(
-                    if (mode == Mode.Zip) "ZIP code" else "Town or street address",
+                    stringResource(if (mode == Mode.Zip) R.string.zip_code else R.string.town_or_address),
                     style = BodyText.copy(fontSize = 15.sp, lineHeight = 20.sp, fontWeight = FontWeight.SemiBold),
                     color = Brand.ink,
                     modifier = Modifier.padding(top = if (inSheet) 16.dp else 24.dp),
@@ -428,7 +427,7 @@ fun FirstOpenScreen(model: AppModel, modifier: Modifier = Modifier, inSheet: Boo
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         decorationBox = decoration,
                         modifier = fieldModifier
-                            .semantics { contentDescription = "ZIP code" }
+                            .semantics { contentDescription = zipLabel }
                             .testTag("zipField"),
                     )
                 } else {
@@ -453,7 +452,7 @@ fun FirstOpenScreen(model: AppModel, modifier: Modifier = Modifier, inSheet: Boo
                         keyboardActions = KeyboardActions(onSearch = { lookUpText(thenChoose = false) }),
                         decorationBox = decoration,
                         modifier = fieldModifier
-                            .semantics { contentDescription = "Town or street address" }
+                            .semantics { contentDescription = placeLabel }
                             .testTag("placeField"),
                     )
                 }
@@ -523,7 +522,7 @@ private fun Actions(
         }
         Column {
             Link(switchLabel, linksEnabled, onSwitch)
-            Link("Use my location", linksEnabled, onMyLocation)
+            Link(stringResource(R.string.use_my_location), linksEnabled, onMyLocation)
         }
     }
 }
@@ -531,7 +530,7 @@ private fun Actions(
 @Composable
 private fun Status(busy: Boolean, outcome: FirstOpenLookup.Outcome?) {
     when {
-        busy -> Text("Looking up…", style = BodyText, color = Brand.inkSoft)
+        busy -> Text(stringResource(R.string.looking_up), style = BodyText, color = Brand.inkSoft)
         outcome is FirstOpenLookup.Outcome.Found -> Row(verticalAlignment = Alignment.CenterVertically) {
             Icon(
                 Icons.Filled.CheckCircle,

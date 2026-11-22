@@ -42,6 +42,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
@@ -51,6 +52,7 @@ import androidx.compose.ui.unit.sp
 import garden.hereabouts.app.AppModel
 import garden.hereabouts.app.Brand
 import garden.hereabouts.app.CareTables
+import garden.hereabouts.app.R
 import garden.hereabouts.app.openInBrowser
 import garden.hereabouts.app.plants.PlantThumbnail
 import garden.hereabouts.core.Job
@@ -80,7 +82,7 @@ fun JobSheet(
             row.jobs.forEachIndexed { i, job ->
                 if (i > 0) {
                     Text(
-                        "Or: ${job.heading}",
+                        stringResource(R.string.job_or, job.heading),
                         style = TitleStyle.copy(fontSize = 20.sp, lineHeight = 26.sp),
                         modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 32.dp).semantics { heading() },
                     )
@@ -104,7 +106,7 @@ private fun Header(title: String, onDone: () -> Unit) {
             onClick = onDone,
             modifier = Modifier.heightIn(min = 48.dp).widthIn(min = 48.dp).testTag("jobSheetDone"),
         ) {
-            Text("Done", style = BodyStyle.copy(color = Brand.moss, fontWeight = FontWeight.SemiBold))
+            Text(stringResource(R.string.done), style = BodyStyle.copy(color = Brand.moss, fontWeight = FontWeight.SemiBold))
         }
     }
 }
@@ -119,7 +121,7 @@ private fun PlantLine(model: AppModel, plant: Plant) {
     ) {
         PlantThumbnail(plant, model.photos, 64.dp)
         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            Text("Your ${plant.common}", style = BodyStyle)
+            Text(stringResource(R.string.your_plant, plant.common), style = BodyStyle)
             val credit = Labels.mainPhoto(plant)?.photo?.credit
             if (!credit.isNullOrEmpty()) Text(credit, style = CreditStyle)
         }
@@ -140,13 +142,13 @@ private fun JobDetail(job: Job, week: GardenWeek) {
     val whenText = week.whenText(job)
     val explained = week.whenExplained(job)
     if (whenText.isNotEmpty()) {
-        Label("When")
+        Label(stringResource(R.string.job_when))
         Text(whenText, style = BodyStyle, modifier = Modifier.padding(horizontal = 16.dp).testTag("jobWhen-${job.ruleId}"))
         if (explained.isNotEmpty()) {
             Text(explained, style = SmallStyle, modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 6.dp))
         }
     }
-    Label("What to do")
+    Label(stringResource(R.string.what_to_do))
     Column(Modifier.padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
         // The square sits about halfway up the first line's small letters.
         val squareTop = with(LocalDensity.current) { (BodyStyle.lineHeight.toDp() - 6.dp) / 2 + 1.dp }
@@ -162,7 +164,7 @@ private fun JobDetail(job: Job, week: GardenWeek) {
 @Composable
 private fun SourceList(sources: List<CareTables.Source>) {
     val context = LocalContext.current
-    Label("Sources")
+    Label(stringResource(R.string.sources))
     sources.forEachIndexed { i, source ->
         if (i > 0) Box(Modifier.padding(start = 16.dp).fillMaxWidth().height(1.dp).background(Brand.rule))
         val host = Uri.parse(source.url).host?.removePrefix("www.")
@@ -181,7 +183,7 @@ private fun SourceList(sources: List<CareTables.Source>) {
                 if (!host.isNullOrEmpty()) Text(host, style = SmallStyle)
             }
             Box(Modifier.size(48.dp), contentAlignment = Alignment.Center) {
-                Icon(Icons.AutoMirrored.Filled.OpenInNew, contentDescription = "Opens outside the app", tint = Brand.moss)
+                Icon(Icons.AutoMirrored.Filled.OpenInNew, contentDescription = stringResource(R.string.opens_outside), tint = Brand.moss)
             }
         }
     }
@@ -215,7 +217,7 @@ private fun MarkDoneBar(done: Boolean, toggle: () -> Unit) {
                 }
             }
             Text(
-                if (done) "Mark as not done" else "Mark as done",
+                stringResource(if (done) R.string.mark_not_done else R.string.mark_done),
                 style = BodyStyle.copy(color = if (done) Brand.moss else Color.White, fontWeight = FontWeight.SemiBold),
             )
         }

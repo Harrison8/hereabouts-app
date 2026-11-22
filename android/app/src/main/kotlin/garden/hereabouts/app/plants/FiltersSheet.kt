@@ -45,6 +45,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
@@ -58,12 +59,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import garden.hereabouts.app.Brand
 import garden.hereabouts.app.Figtree
+import garden.hereabouts.app.R
 import garden.hereabouts.app.YoungSerif
 import garden.hereabouts.core.BuyMode
 import garden.hereabouts.core.FilterState
 import garden.hereabouts.core.Location
-import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
+import kotlinx.coroutines.launch
 
 private val sunChoices = listOf("full" to "Full sun (6+ hrs)", "part" to "Part sun / shade", "shade" to "Full shade")
 private val moistureChoices = listOf("dry" to "Dry", "medium" to "Medium", "wet" to "Wet")
@@ -137,7 +139,7 @@ fun FiltersSheet(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
-                    "Filters",
+                    stringResource(R.string.filters),
                     style = TextStyle(fontFamily = YoungSerif, fontSize = 22.sp, lineHeight = 28.sp, color = Brand.ink),
                     modifier = Modifier.weight(1f).semantics { heading() },
                 )
@@ -145,7 +147,7 @@ fun FiltersSheet(
                     onClick = { onChange(clearPanel(filter)) },
                     modifier = Modifier.heightIn(min = 48.dp).testTag("clearFilters"),
                 ) {
-                    Text("Clear all", style = TextStyle(fontFamily = Figtree, fontSize = 17.sp, color = Brand.moss))
+                    Text(stringResource(R.string.clear_all), style = TextStyle(fontFamily = Figtree, fontSize = 17.sp, color = Brand.moss))
                 }
             }
 
@@ -154,6 +156,7 @@ fun FiltersSheet(
                 Chips(moistureChoices, filter.moisture, large) { onChange(filter.copy(moisture = filter.moisture.flip(it))) }
             }
             val height = if (filter.maxHeight >= 100) "any" else "${filter.maxHeight.toInt()} ft"
+            val heightSpoken = stringResource(R.string.max_height)
             Group("Mature height", value = height) {
                 Slider(
                     value = filter.maxHeight.toFloat(),
@@ -172,7 +175,7 @@ fun FiltersSheet(
                         .heightIn(min = 48.dp)
                         .padding(horizontal = 16.dp)
                         .semantics {
-                            contentDescription = "Maximum mature height in feet"
+                            contentDescription = heightSpoken
                             stateDescription = height
                         },
                 )
@@ -207,7 +210,7 @@ fun FiltersSheet(
                 }
                 if (location == null) {
                     Text(
-                        "Set your location first",
+                        stringResource(R.string.set_location_first),
                         style = TextStyle(fontFamily = Figtree, fontSize = 13.sp, color = Brand.inkSoft),
                         modifier = Modifier.padding(horizontal = 16.dp),
                     )

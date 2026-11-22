@@ -49,6 +49,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
@@ -61,9 +62,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import garden.hereabouts.app.AppModel
 import garden.hereabouts.app.Brand
 import garden.hereabouts.app.Figtree
+import garden.hereabouts.app.R
 import garden.hereabouts.app.YoungSerif
-import garden.hereabouts.app.openInBrowser
 import garden.hereabouts.app.firstopen.FirstOpenScreen
+import garden.hereabouts.app.openInBrowser
 import garden.hereabouts.core.Labels
 import garden.hereabouts.core.hereaboutsCompare
 
@@ -87,9 +89,10 @@ fun SettingsScreen(model: AppModel, onChangeLocation: () -> Unit, onPhotoCredits
     val remindersOn by model.remindersOn.collectAsStateWithLifecycle()
     val data by model.data.collectAsStateWithLifecycle()
     val version = remember(context) { versionText(context) }
+    val changeLocationSpoken = stringResource(R.string.change_location)
 
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(bottom = 32.dp)) {
-        GroupLabel("Your location")
+        GroupLabel(stringResource(R.string.your_location))
         Group {
             ListItem(
                 headlineContent = { Text(location?.let { "${it.countyName}, ${it.stateName}" }.orEmpty(), style = RowText) },
@@ -100,10 +103,10 @@ fun SettingsScreen(model: AppModel, onChangeLocation: () -> Unit, onPhotoCredits
                         modifier = Modifier
                             .heightIn(min = 48.dp)
                             .widthIn(min = 48.dp)
-                            .semantics { contentDescription = "Change location" }
+                            .semantics { contentDescription = changeLocationSpoken }
                             .testTag("changeLocation"),
                     ) {
-                        Text("Change", style = RowText.copy(fontWeight = FontWeight.SemiBold), color = Brand.moss)
+                        Text(stringResource(R.string.change), style = RowText.copy(fontWeight = FontWeight.SemiBold), color = Brand.moss)
                     }
                 },
                 colors = rowColors(),
@@ -111,13 +114,13 @@ fun SettingsScreen(model: AppModel, onChangeLocation: () -> Unit, onPhotoCredits
         }
 
         GroupRule()
-        GroupLabel("Reminders")
+        GroupLabel(stringResource(R.string.reminders))
         Group {
             ListItem(
-                headlineContent = { Text("Saturday reminders", style = RowText) },
+                headlineContent = { Text(stringResource(R.string.saturday_reminders), style = RowText) },
                 supportingContent = {
                     Text(
-                        "Each Saturday at 8:00 you’ll get the week’s garden jobs for the plants you saved.",
+                        stringResource(R.string.reminder_sentence),
                         style = Footnote,
                         color = Brand.inkSoft,
                     )
@@ -133,27 +136,27 @@ fun SettingsScreen(model: AppModel, onChangeLocation: () -> Unit, onPhotoCredits
         }
 
         GroupRule()
-        GroupLabel("About Hereabouts")
+        GroupLabel(stringResource(R.string.about_hereabouts))
         Group {
-            OutsideLink("Privacy policy") { openInBrowser(context, PRIVACY_URL) }
-            OutsideLink("How affiliate links work") { openInBrowser(context, AFFILIATE_URL) }
+            OutsideLink(stringResource(R.string.privacy_policy)) { openInBrowser(context, PRIVACY_URL) }
+            OutsideLink(stringResource(R.string.how_affiliate)) { openInBrowser(context, AFFILIATE_URL) }
             ListItem(
-                headlineContent = { Text("Photo credits and licenses", style = RowText) },
+                headlineContent = { Text(stringResource(R.string.photo_credits), style = RowText) },
                 colors = rowColors(),
                 modifier = Modifier.clickable(onClick = onPhotoCredits),
             )
         }
 
         GroupRule()
-        GroupLabel("This app")
+        GroupLabel(stringResource(R.string.this_app))
         Group {
             ListItem(
-                headlineContent = { Text("Version", style = RowText) },
+                headlineContent = { Text(stringResource(R.string.version), style = RowText) },
                 supportingContent = { Text(version, style = Footnote, color = Brand.inkSoft) },
                 colors = rowColors(),
             )
             ListItem(
-                headlineContent = { Text("Plant and seller data", style = RowText) },
+                headlineContent = { Text(stringResource(R.string.plant_seller_data), style = RowText) },
                 supportingContent = { Text(dataDay(data.version.dataDate), style = Footnote, color = Brand.inkSoft) },
                 colors = rowColors(),
             )
@@ -199,7 +202,7 @@ private fun OutsideLink(title: String, onClick: () -> Unit) {
     ListItem(
         headlineContent = { Text(title, style = RowText) },
         trailingContent = {
-            Icon(Icons.AutoMirrored.Filled.OpenInNew, contentDescription = "Opens outside the app", tint = Brand.ink)
+            Icon(Icons.AutoMirrored.Filled.OpenInNew, contentDescription = stringResource(R.string.opens_outside), tint = Brand.ink)
         },
         colors = rowColors(),
         modifier = Modifier.clickable(onClick = onClick),
@@ -241,9 +244,9 @@ private fun Page(
 fun ChangeLocationPage(model: AppModel, onClose: () -> Unit) {
     BackHandler(onBack = onClose)
     Page(
-        title = "Change location",
+        title = stringResource(R.string.change_location),
         navigationIcon = {
-            IconButton(onClick = onClose) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back") }
+            IconButton(onClick = onClose) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back)) }
         },
     ) { padding ->
         FirstOpenScreen(
@@ -269,9 +272,9 @@ fun PhotoCreditsPage(model: AppModel, onBack: () -> Unit) {
             }
     }
     Page(
-        title = "Photo credits and licenses",
+        title = stringResource(R.string.photo_credits),
         navigationIcon = {
-            IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back") }
+            IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back)) }
         },
         contentWindowInsets = WindowInsets.safeDrawing,
     ) { padding ->

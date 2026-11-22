@@ -34,6 +34,7 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
@@ -47,6 +48,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import garden.hereabouts.app.Brand
 import garden.hereabouts.app.Figtree
+import garden.hereabouts.app.R
 import garden.hereabouts.app.YoungSerif
 import garden.hereabouts.app.services.PhotoCache
 import garden.hereabouts.core.Labels
@@ -128,17 +130,18 @@ private fun Words(plant: Plant, meta: String) {
 /** The bookmark: filled moss when saved, an outline when not. 48 dp square, so it is easy to hit. */
 @Composable
 private fun SaveButton(plant: Plant, isSaved: Boolean, onSave: () -> Unit, modifier: Modifier = Modifier) {
+    val savedState = stringResource(if (isSaved) R.string.saved else R.string.not_saved)
     IconToggleButton(
         checked = isSaved,
         onCheckedChange = { onSave() },
         modifier = modifier
             .size(48.dp)
-            .semantics { stateDescription = if (isSaved) "Saved" else "Not saved" }
+            .semantics { stateDescription = savedState }
             .testTag("save-${plant.id}"),
     ) {
         Icon(
             imageVector = if (isSaved) Icons.Filled.Bookmark else Icons.Outlined.BookmarkBorder,
-            contentDescription = "Save ${plant.common}",
+            contentDescription = stringResource(R.string.save_plant, plant.common),
             tint = if (isSaved) Brand.moss else Brand.inkSoft,
         )
     }
@@ -175,7 +178,7 @@ fun PlantThumbnail(plant: Plant, photos: PhotoCache?, side: Dp) {
                 modifier = Modifier.size(side),
             )
             Loaded.Missing -> Text(
-                "No photograph yet",
+                stringResource(R.string.no_photo),
                 style = TextStyle(fontFamily = Figtree, fontSize = 12.sp, color = Brand.inkSoft, textAlign = TextAlign.Center),
                 modifier = Modifier.padding(4.dp),
             )

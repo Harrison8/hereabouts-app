@@ -19,12 +19,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import garden.hereabouts.app.Brand
 import garden.hereabouts.app.Figtree
+import garden.hereabouts.app.R
 
 @Composable
 fun OfflineBanner(modifier: Modifier = Modifier) {
@@ -50,7 +52,7 @@ fun OfflineBanner(modifier: Modifier = Modifier) {
                 .clearAndSetSemantics {},
         )
         Text(
-            "No signal. Every plant and photo still works. Seller links open once you have signal again.",
+            stringResource(R.string.no_signal),
             style = text,
             modifier = Modifier.testTag("offlineBanner"),
         )

@@ -23,6 +23,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
@@ -35,6 +36,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import garden.hereabouts.app.Brand
 import garden.hereabouts.app.Figtree
+import garden.hereabouts.app.R
 import garden.hereabouts.core.SortKey
 
 @Composable
@@ -42,15 +44,16 @@ fun SortMenu(sort: SortKey, onSort: (SortKey) -> Unit, modifier: Modifier = Modi
     var open by remember { mutableStateOf(false) }
     val style = TextStyle(fontFamily = Figtree, fontWeight = FontWeight.Medium, fontSize = 15.sp, color = Brand.moss)
     val arrow = with(LocalDensity.current) { 20.sp.toDp() }
+    val sortWord = stringResource(R.string.sort)
     Box(modifier) {
         Row(
             // The tag goes before clearAndSetSemantics, which would otherwise wipe it.
             modifier = Modifier
                 .testTag("sortMenu")
                 .heightIn(min = 48.dp)
-                .clickable(role = Role.DropdownList, onClickLabel = "Sort") { open = true }
+                .clickable(role = Role.DropdownList, onClickLabel = sortWord) { open = true }
                 .clearAndSetSemantics {
-                    contentDescription = "Sort"
+                    contentDescription = sortWord
                     stateDescription = sort.label
                 }
                 .padding(start = 8.dp),

@@ -99,7 +99,7 @@ private fun post(context: Context, reminder: Reminder) {
     val manager = context.getSystemService(NotificationManager::class.java)
     if (!manager.areNotificationsEnabled()) return
     manager.createNotificationChannel(
-        NotificationChannel(CHANNEL, "Saturday reminders", NotificationManager.IMPORTANCE_DEFAULT),
+        NotificationChannel(CHANNEL, context.getString(R.string.saturday_reminders), NotificationManager.IMPORTANCE_DEFAULT),
     )
     // Brings the screen already open forward instead of opening a second one over it.
     val open = Intent(context, MainActivity::class.java)

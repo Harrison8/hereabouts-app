@@ -8,13 +8,14 @@
 
 package garden.hereabouts.app
 
+import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.BookmarkBorder
 import androidx.compose.material.icons.outlined.Eco
@@ -38,6 +39,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import garden.hereabouts.app.garden.GardenScreen
 import garden.hereabouts.app.plant.PlantScreen
@@ -47,10 +49,10 @@ import garden.hereabouts.app.settings.PhotoCreditsPage
 import garden.hereabouts.app.settings.SettingsScreen
 
 /** Each tab: its name in the tab bar, the title over its screen, and its icon. */
-enum class Tab(val title: String, val heading: String, val icon: ImageVector) {
-    Plants("Plants", "Plants", Icons.Outlined.Eco),
-    Garden("Garden", "My garden", Icons.Outlined.BookmarkBorder),
-    Settings("Settings", "Settings", Icons.Outlined.Settings),
+enum class Tab(@StringRes val title: Int, @StringRes val heading: Int, val icon: ImageVector) {
+    Plants(R.string.tab_plants, R.string.tab_plants, Icons.Outlined.Eco),
+    Garden(R.string.tab_garden, R.string.title_my_garden, Icons.Outlined.BookmarkBorder),
+    Settings(R.string.tab_settings, R.string.tab_settings, Icons.Outlined.Settings),
 }
 
 /** The pages that open over the tabs. */
@@ -105,7 +107,7 @@ fun RootTabs(model: AppModel, isOnline: Boolean) {
         containerColor = Brand.ground,
         topBar = {
             if (open == Tab.Settings || (open == Tab.Garden && gardenPlant == null)) TopAppBar(
-                title = { Text(open.heading, modifier = Modifier.testTag("title")) },
+                title = { Text(stringResource(open.heading), modifier = Modifier.testTag("title")) },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = Brand.ground,
                     scrolledContainerColor = Brand.ground,
@@ -124,8 +126,8 @@ fun RootTabs(model: AppModel, isOnline: Boolean) {
                             open = tab
                         },
                         icon = { Icon(tab.icon, contentDescription = null) },
-                        label = { Text(tab.title) },
-                        modifier = Modifier.testTag("tab-${tab.title}"),
+                        label = { Text(stringResource(tab.title)) },
+                        modifier = Modifier.testTag("tab-${tab.name}"),
                     )
                 }
             }
