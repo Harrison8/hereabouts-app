@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The loading screen before Android 12: kraft, with the moss tag 160 dp square in the middle of the screen, where
+     the opening's first frame draws it. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <color android:color="#ECE5D3" />
+    </item>
+    <item
+        android:width="160dp"
+        android:height="160dp"
+        android:drawable="@drawable/opening_tag"
+        android:gravity="center" />
+</layer-list>

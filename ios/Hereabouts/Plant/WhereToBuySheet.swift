@@ -170,7 +170,7 @@ struct WhereToBuySheet: View {
 
     /// The lines under a seller's name. A shop nearby: "Pick up · 15 mi · Goshen, KY", the website's words. With no
     /// county set, where the seller ships, as the website says it. Then the size and price ("1-Pack · $69.00"), in
-    /// the order the approved picture writes them.
+    /// the order the approved picture writes them, a range read with "to" ("1 to 2 ft").
     static func lines(_ row: BuyRow, location: Location?) -> [String] {
         var lines: [String] = []
         if row.local, let miles = row.miles {
@@ -178,7 +178,8 @@ struct WhereToBuySheet: View {
         } else if location == nil, let ships = row.ships, !ships.isEmpty {
             lines.append(ships)
         }
-        let detail = [row.size, row.price].compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: " \u{00B7} ")
+        let detail = RangeText.display(
+            [row.size, row.price].compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: " \u{00B7} "))
         if !detail.isEmpty { lines.append(detail) }
         return lines
     }

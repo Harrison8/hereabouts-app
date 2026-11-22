@@ -93,6 +93,7 @@ internal object Expected {
         "map.json" to setOf("about", "cases"),
         "care.json" to setOf("about", "cases"),
         "analytics.json" to setOf("about", "allowed", "onceKeys", "cases"),
+        "home-map.json" to setOf("about", "cases"),
     )
 
     /** The fields each kind of case may have, besides `kind` and `result`. A null kind is a case with no kind. */
@@ -124,6 +125,7 @@ internal object Expected {
         "map.json" to mapOf<String?, Set<String>>(null to setOf("lat", "lon", "point", "region", "pathCount", "firstPoint")),
         "care.json" to mapOf<String?, Set<String>>(null to setOf("tz", "now", "county", "savedIds")),
         "analytics.json" to mapOf<String?, Set<String>>(null to setOf("event", "props")),
+        "home-map.json" to mapOf<String?, Set<String>>(null to setOf("region", "step")),
     )
 
     private val parsed = HashMap<String, JsonObject>()

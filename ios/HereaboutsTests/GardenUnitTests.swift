@@ -1,6 +1,7 @@
 // The Garden tab's model without the screen: planning the Saturday reminders again leaves the app's other
 // notifications alone; coming to the front reads the notification permission again and moves the clock on (but not a
-// screen test's fixed clock); and a tapped reminder closes what is open and shows the Garden tab.
+// screen test's fixed clock); a tapped reminder closes what is open and shows the Garden tab; and where a saved
+// plant's row comes to rest when a swipe stops, including a swipe the phone calls off.
 import HereaboutsCore
 import XCTest
 @testable import Hereabouts
@@ -95,5 +96,26 @@ final class GardenUnitTests: XCTestCase {
         XCTAssertTrue(model.gardenPath.isEmpty, "The plant page opened from the Garden tab is still open")
         XCTAssertNil(model.openJob, "The job sheet is still open")
         XCTAssertEqual(model.closeSheetsCount, before + 1, "The other sheets were not told to close")
+    }
+
+    // MARK: - where a swiped row comes to rest
+
+    /// A row 393 points wide, as on an iPhone 17. The finger lifts.
+    func testALiftedSwipeRemovesOpensOrShutsByHowFarItWent() {
+        XCTAssertEqual(SwipeEnd.settle(from: 0, dx: -300, width: 393, lifted: true), .remove)
+        XCTAssertEqual(SwipeEnd.settle(from: 0, dx: -120, width: 393, lifted: true), .open)
+        XCTAssertEqual(SwipeEnd.settle(from: 0, dx: -20, width: 393, lifted: true), .shut)
+        XCTAssertEqual(SwipeEnd.settle(from: -80, dx: 70, width: 393, lifted: true), .shut)
+        XCTAssertEqual(SwipeEnd.settle(from: -80, dx: -160, width: 393, lifted: true), .remove)
+        XCTAssertEqual(SwipeEnd.settle(from: 0, dx: 50, width: 393, lifted: true), .shut)
+    }
+
+    /// The phone calls the swipe off (a call, an alert, a swipe from the screen's edge): however far it went, the row
+    /// goes back to where it began and the plant stays saved.
+    func testASwipeThePhoneCallsOffNeverRemoves() {
+        XCTAssertEqual(SwipeEnd.settle(from: 0, dx: -300, width: 393, lifted: false), .shut)
+        XCTAssertEqual(SwipeEnd.settle(from: 0, dx: -120, width: 393, lifted: false), .shut)
+        XCTAssertEqual(SwipeEnd.settle(from: -80, dx: -300, width: 393, lifted: false), .open)
+        XCTAssertEqual(SwipeEnd.settle(from: -80, dx: 80, width: 393, lifted: false), .open)
     }
 }

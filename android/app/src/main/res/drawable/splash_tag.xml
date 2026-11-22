@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The same tag for Android 12 and later's loading screen. Android draws that screen's icon 288 dp square, so the
+     256-unit drawing sits in the middle of a 460.8-unit canvas and shows 160 dp square, as on the older phones. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="288dp"
+    android:height="288dp"
+    android:viewportWidth="460.8"
+    android:viewportHeight="460.8">
+    <group
+        android:translateX="102.4"
+        android:translateY="102.4">
+        <path
+            android:fillColor="#3B4A2A"
+            android:fillType="evenOdd"
+            android:pathData="M40 30A10 10 0 0 1 50 20H206A10 10 0 0 1 216 30V142A6 6 0 0 1 210 148H180A16 16 0 0 0 164 164V196L128 232L92 196V164A16 16 0 0 0 76 148H46A6 6 0 0 1 40 142ZM168.6 108.99Q168.6 113.89 170.38 117.27Q172.16 120.64 176.82 120.64H177.56Q179.4 120.64 179.4 122.48V126.16Q179.4 128 177.56 128H139.9Q138.06 128 138.06 126.16V122.48Q138.06 120.64 139.9 120.64H140.63Q145.3 120.64 147.14 117.27Q148.98 113.89 148.98 108.99V85.68H107.02V108.99Q107.02 113.89 108.86 117.27Q110.7 120.64 115.37 120.64H116.1Q117.94 120.64 117.94 122.48V126.16Q117.94 128 116.1 128H78.44Q76.6 128 76.6 126.16V122.48Q76.6 120.64 78.44 120.64H79.18Q83.84 120.64 85.62 117.27Q87.4 113.89 87.4 108.99V55.01Q87.4 50.11 85.62 46.73Q83.84 43.36 79.18 43.36H78.44Q76.6 43.36 76.6 41.52V37.84Q76.6 36 78.44 36H116.1Q117.94 36 117.94 37.84V41.52Q117.94 43.36 116.1 43.36H115.37Q110.7 43.36 108.86 46.73Q107.02 50.11 107.02 55.01V75.99H148.98V55.01Q148.98 50.11 147.14 46.73Q145.3 43.36 140.63 43.36H139.9Q138.06 43.36 138.06 41.52V37.84Q138.06 36 139.9 36H177.56Q179.4 36 179.4 37.84V41.52Q179.4 43.36 177.56 43.36H176.82Q172.16 43.36 170.38 46.73Q168.6 50.11 168.6 55.01Z" />
+    </group>
+</vector>

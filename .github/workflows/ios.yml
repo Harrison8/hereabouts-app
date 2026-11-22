@@ -116,6 +116,7 @@ jobs:
             exit 1
           fi
           echo "Testing on iPhone 17 ($udid)."
+          echo "UDID=$udid" >> "$GITHUB_ENV"
           echo "- iPhone 17, iOS 26: ran" >> "$GITHUB_STEP_SUMMARY"
           # "Use my location" is allowed before the tests start, so the screen test never waits on the phone's own
           # permission question, which the test machine is slow to show.
@@ -127,37 +128,6 @@ jobs:
             -destination "platform=iOS Simulator,id=$udid,arch=arm64" \
             -derivedDataPath "$DERIVED" \
             -resultBundlePath "$RESULTS/ios26.xcresult"
-
-      # The lowest iOS the app supports, when this machine has an iOS 17 simulator. None is downloaded.
-      - name: Screen tests on iOS 17, if this machine has it
-        working-directory: ios
-        run: |
-          set -euo pipefail
-          runtime=$(jq -r '
-            [.runtimes[] | select(.platform == "iOS" and .isAvailable and (.version | startswith("17.")))]
-              | sort_by(.version | split(".") | map(tonumber)) | last | .identifier // empty' "$RUNNER_TEMP/runtimes.json")
-          if [ -z "$runtime" ]; then
-            echo "This machine has no iOS 17 simulator, so the iOS 17 screen tests are skipped."
-            echo "- iOS 17: skipped, this machine has no iOS 17 simulator" >> "$GITHUB_STEP_SUMMARY"
-            exit 0
-          fi
-          udid=$(xcrun simctl list devices available -j | jq -r --arg rt "$runtime" '
-            [.devices[$rt][]? | select(.name | startswith("iPhone"))] | first | .udid // empty')
-          if [ -z "$udid" ]; then
-            # An iPhone 15 runs iOS 17; newer models do not.
-            udid=$(xcrun simctl create "iPhone 15 (iOS 17)" com.apple.CoreSimulator.SimDeviceType.iPhone-15 "$runtime")
-          fi
-          name=$(xcrun simctl list devices -j | jq -r --arg u "$udid" '[.devices[][] | select(.udid == $u)] | first | .name')
-          echo "Testing on $name, $runtime ($udid)."
-          echo "- $name, $runtime: ran" >> "$GITHUB_STEP_SUMMARY"
-          xcrun simctl boot "$udid" 2>/dev/null || true
-          xcrun simctl install "$udid" "$DERIVED/Build/Products/Debug-iphonesimulator/Hereabouts.app"
-          xcrun simctl privacy "$udid" grant location garden.hereabouts.app || true
-          xcodebuild test-without-building \
-            -project Hereabouts.xcodeproj -scheme Hereabouts \
-            -destination "platform=iOS Simulator,id=$udid,arch=arm64" \
-            -derivedDataPath "$DERIVED" \
-            -resultBundlePath "$RESULTS/ios17.xcresult"
 
       # Every screenshot the screen tests attached, named by run and screen, from each result.
       - name: Take the screenshots out of the results
@@ -190,3 +160,92 @@ jobs:
           path: ${{ runner.temp }}/screenshots
           if-no-files-found: warn
           retention-days: 14
+
+      # The app's own log from the iPhone 17 simulator: what the app wrote while the screen tests ran, which the test
+      # output does not carry.
+      - name: Take the app's log from the simulator
+        if: always()
+        run: |
+          set -uo pipefail
+          mkdir -p "$RUNNER_TEMP/applog"
+          if [ -z "${UDID:-}" ]; then echo "No simulator was used."; exit 0; fi
+          xcrun simctl spawn "$UDID" log show --last 90m --info --style compact \
+            --predicate 'process == "Hereabouts"' > "$RUNNER_TEMP/applog/hereabouts.log" 2>&1 || true
+          wc -l "$RUNNER_TEMP/applog/"*
+          gzip -f "$RUNNER_TEMP/applog/hereabouts.log"
+
+      - name: Save the app's log
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: iphone-app-log
+          path: ${{ runner.temp }}/applog
+          if-no-files-found: warn
+          retention-days: 14
+
+  # The lowest iOS the app supports. No build machine has an iOS 17 simulator, so this job downloads iOS 17.5 (several
+  # GB) and runs the unit tests and the Garden screen tests on it. It runs only when started by hand, never on a push.
+  ios17:
+    if: ${{ github.event_name == 'workflow_dispatch' }}
+    runs-on: macos-26
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Work folders
+        run: |
+          {
+            echo "DERIVED=$RUNNER_TEMP/derived"
+            echo "RESULTS=$RUNNER_TEMP/results"
+          } >> "$GITHUB_ENV"
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Make the Xcode project
+        working-directory: ios
+        run: xcodegen
+
+      - name: Download the iOS 17.5 simulator
+        run: |
+          set -euo pipefail
+          xcodebuild -version
+          xcodebuild -downloadPlatform iOS -buildVersion 17.5
+          xcrun simctl list runtimes
+
+      - name: Build the app and its tests
+        working-directory: ios
+        run: |
+          set -o pipefail
+          xcodebuild build-for-testing -quiet \
+            -project Hereabouts.xcodeproj -scheme Hereabouts \
+            -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath "$DERIVED" \
+            CODE_SIGNING_ALLOWED=NO
+
+      - name: Unit tests and Garden screen tests on iOS 17.5
+        working-directory: ios
+        run: |
+          set -euo pipefail
+          runtime=$(xcrun simctl list runtimes -j | jq -r '
+            [.runtimes[] | select(.platform == "iOS" and .isAvailable and .version == "17.5")] | first | .identifier // empty')
+          if [ -z "$runtime" ]; then
+            echo "::error::The iOS 17.5 simulator did not install."
+            exit 1
+          fi
+          # An iPhone 15 runs iOS 17; newer models do not.
+          udid=$(xcrun simctl create "iPhone 15 (iOS 17.5)" com.apple.CoreSimulator.SimDeviceType.iPhone-15 "$runtime")
+          echo "Testing on iPhone 15, iOS 17.5 ($udid)."
+          echo "- iPhone 15, iOS 17.5: ran" >> "$GITHUB_STEP_SUMMARY"
+          xcrun simctl boot "$udid" 2>/dev/null || true
+          xcrun simctl install "$udid" "$DERIVED/Build/Products/Debug-iphonesimulator/Hereabouts.app"
+          xcrun simctl privacy "$udid" grant location garden.hereabouts.app || true
+          xcodebuild test-without-building \
+            -project Hereabouts.xcodeproj -scheme Hereabouts \
+            -destination "platform=iOS Simulator,id=$udid,arch=arm64" \
+            -derivedDataPath "$DERIVED" \
+            -resultBundlePath "$RESULTS/ios17.xcresult" \
+            -only-testing:HereaboutsTests \
+            -only-testing:HereaboutsUITests/GardenTests

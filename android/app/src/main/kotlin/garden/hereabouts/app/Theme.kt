@@ -34,6 +34,22 @@ object Brand {
     val ruleStrong = Color(0xFFB4BEAD)
     /** Error text. */
     val error = Color(0xFFA8321F)
+    /** Photo credits under a plant's name. */
+    val creditGrey = Color(0xFF7C847D)
+    /** The kraft paper of the no-signal line. */
+    val kraft = Color(0xFFECE5D3)
+    /** A chosen chip's fill. */
+    val mossSoft = Color(0xFFC9D3BC)
+    /** The seed-packet paper: the range map's region edges and the dot that marks the county. */
+    val packet = Color(0xFFF7F2E6)
+
+    /** The season chart's bar colours, by what the plant is doing, as the brand kit's chart draws them. */
+    fun season(state: String): Color = when (state) {
+        "bloom" -> Color(0xFFB86B52)
+        "fruit" -> Color(0xFF8E3B3B)
+        "fall" -> Color(0xFFB5602E)
+        else -> Color(0xFF7D8757)
+    }
 }
 
 /**
@@ -50,6 +66,11 @@ val Figtree = FontFamily(
         R.font.figtree,
         weight = FontWeight.Normal,
         variationSettings = FontVariation.Settings(FontVariation.weight(400)),
+    ),
+    Font(
+        R.font.figtree,
+        weight = FontWeight.Medium,
+        variationSettings = FontVariation.Settings(FontVariation.weight(500)),
     ),
     Font(
         R.font.figtree,

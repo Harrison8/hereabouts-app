@@ -4,4 +4,15 @@
     <style name="Theme.Hereabouts" parent="android:Theme.Material.Light.NoActionBar">
         <item name="android:windowBackground">@android:color/white</item>
     </style>
+
+    <!-- The loading screen the phone shows while the app starts, before Android 12: kraft, with the moss tag 160 dp
+         square in the middle of the whole screen, where the opening's first frame draws it. The window reaches under
+         the status bar and the button bar, as the app's screens do, so the middle is the same. The screen switches
+         to Theme.Hereabouts as it is made. -->
+    <style name="Theme.Hereabouts.Launch" parent="Theme.Hereabouts">
+        <item name="android:windowBackground">@drawable/launch_background</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:windowTranslucentNavigation">true</item>
+    </style>
 </resources>

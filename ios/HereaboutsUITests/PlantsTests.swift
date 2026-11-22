@@ -2,7 +2,8 @@
 // running the website's code, and copied into this test bundle with data/plants.json for the plant names):
 // Fairfax County lists the same plants in the same order, a search for "oak" shows the same plants and the same
 // "Also matching" lines, the height sort and the shade filter give the website's order, the save button saves without
-// opening the plant, and with no signal the banner shows. Each launch is set up as if the ZIP code had been typed, so
+// opening the plant, the county has its map pin, heights read "1.5 to 2.5 ft", and with no signal the banner shows
+// with its cloud. Each launch is set up as if the ZIP code had been typed, so
 // the position used for nearby shops matches the expected answers.
 // Events go to a stand-in server on 127.0.0.1 run by the test; nothing reaches an outside address.
 import XCTest
@@ -26,7 +27,7 @@ final class PlantsTests: XCTestCase {
     @MainActor
     private func launch(zip: String = "22030", offline: Bool = false, textSize: String? = nil) -> XCUIApplication {
         let app = XCUIApplication()
-        app.launchArguments = ["-uiTestZip", zip, "-hereaboutsBaseURL", server.baseURL]
+        app.launchArguments = ["-uiTestSkipOpening", "-uiTestZip", zip, "-hereaboutsBaseURL", server.baseURL]
         if offline { app.launchArguments.append("-uiTestOffline") }
         if let textSize { app.launchArguments += ["-UIPreferredContentSizeCategoryName", textSize] }
         app.launch()
@@ -70,6 +71,19 @@ final class PlantsTests: XCTestCase {
     @MainActor
     private func scrollToTop(_ app: XCUIApplication) {
         for _ in 0..<8 where !app.buttons["sortMenu"].isHittable { app.swipeDown() }
+    }
+
+    /// Types into the search field once it has the keyboard. A tap that lands while the list is still settling can
+    /// leave the field without it, so a second tap follows if the first did not take.
+    @MainActor
+    private func search(_ app: XCUIApplication, _ text: String) {
+        let field = app.searchFields.firstMatch
+        XCTAssertTrue(field.waitForExistence(timeout: 10), "No search field")
+        let focused = { (field.value(forKey: "hasKeyboardFocus") as? Bool) ?? false }
+        field.tap()
+        if !StubServer.wait(3, until: focused) { field.tap() }
+        _ = StubServer.wait(3, until: focused)
+        field.typeText(text)
     }
 
     @MainActor
@@ -140,6 +154,9 @@ final class PlantsTests: XCTestCase {
         attachScreenshot(app, "Plants, Fairfax County")
         XCTAssertTrue(app.buttons["plantsCounty"].exists, "The county under the title is not there")
         XCTAssertEqual(app.buttons["plantsCounty"].label, "Fairfax County, Virginia")
+        let pin = app.descendants(matching: .any)["county-pin"]
+        XCTAssertTrue(pin.exists, "No map pin before the county")
+        XCTAssertLessThanOrEqual(pin.frame.maxX, app.buttons["plantsCounty"].frame.minX + 1, "The map pin is not before the county")
         XCTAssertFalse(app.staticTexts["offlineBanner"].exists, "The no-signal banner shows with signal")
         XCTAssertEqual(shownIds(app, count: 10), Array(ids(expected).prefix(10)))
 
@@ -162,10 +179,7 @@ final class PlantsTests: XCTestCase {
             // Only this launch's events count: the server keeps the ones the last ZIP code's launch sent.
             let start = server.postedEvents.count
             let app = launch(zip: zip)
-            let field = app.searchFields.firstMatch
-            XCTAssertTrue(field.waitForExistence(timeout: 10), "No search field")
-            field.tap()
-            field.typeText("oak")
+            search(app, "oak")
             let want = ids(expected)
             let settled = StubServer.wait(10) { self.plantRows(app).count == want.count }
             XCTAssertTrue(settled, "\(zip): \(plantRows(app).count) rows after searching oak, expected \(want.count)")
@@ -304,10 +318,7 @@ final class PlantsTests: XCTestCase {
         XCTAssertTrue(trees.waitForExistence(timeout: 10), "No Trees chip")
         trees.tap()
         XCTAssertTrue(StubServer.wait(5) { trees.isSelected }, "The Trees chip is not shown as chosen")
-        let field = app.searchFields.firstMatch
-        XCTAssertTrue(field.waitForExistence(timeout: 10), "No search field")
-        field.tap()
-        field.typeText("milkweed")
+        search(app, "milkweed")
         XCTAssertTrue(StubServer.wait(10) { self.plantRows(app).count == 0 }, "Trees and \"milkweed\" still show plants")
         XCTAssertTrue(trees.exists, "The chosen Trees chip vanished when no trees matched")
         XCTAssertTrue(trees.isSelected, "The Trees chip is no longer shown as chosen")
@@ -323,8 +334,26 @@ final class PlantsTests: XCTestCase {
         let banner = app.staticTexts["offlineBanner"]
         XCTAssertTrue(banner.waitForExistence(timeout: 10), "No banner with no signal")
         XCTAssertEqual(banner.label, "No signal. Every plant and photo still works. Seller links open once you have signal again.")
+        let icon = app.descendants(matching: .any)["no-signal-icon"]
+        XCTAssertTrue(icon.exists, "No no-signal icon at the start of the banner")
+        XCTAssertLessThanOrEqual(icon.frame.maxX, banner.frame.minX + 1, "The no-signal icon is not before the words")
         XCTAssertGreaterThan(plantRows(app).count, 2, "The list is empty with no signal")
         attachScreenshot(app, "Plants, no signal")
+    }
+
+    /// A height in the list reads with "to", not a dash: Butterfly Weed is "1.5 to 2.5 ft", and no row on screen
+    /// shows an en dash.
+    @MainActor
+    func testHeightsInTheListReadTo() throws {
+        let app = launch()
+        XCTAssertGreaterThan(plantRows(app).count, 2, "The list is empty")
+        for label in plantRows(app).allElementsBoundByIndex.map(\.label) {
+            XCTAssertFalse(label.contains("\u{2013}"), "A row shows an en dash: \(label)")
+        }
+        search(app, "Butterfly Weed")
+        let row = app.descendants(matching: .any)["plant-asclepias-tuberosa"]
+        XCTAssertTrue(row.waitForExistence(timeout: 10), "No row for Butterfly Weed")
+        XCTAssertTrue(row.label.hasSuffix("1.5 to 2.5 ft"), "Butterfly Weed's row reads: \(row.label)")
     }
 
     /// At the largest text size every row still has its save button in reach, and the panel opens.

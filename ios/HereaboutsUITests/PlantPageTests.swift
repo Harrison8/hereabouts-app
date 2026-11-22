@@ -27,7 +27,7 @@ final class PlantPageTests: XCTestCase {
     @MainActor
     private func launch(zip: String = "22030", textSize: String? = nil) -> XCUIApplication {
         let app = XCUIApplication()
-        app.launchArguments = ["-uiTestZip", zip, "-hereaboutsBaseURL", server.baseURL, "-uiTestCaptureLinks"]
+        app.launchArguments = ["-uiTestSkipOpening", "-uiTestZip", zip, "-hereaboutsBaseURL", server.baseURL, "-uiTestCaptureLinks"]
         if let textSize { app.launchArguments += ["-UIPreferredContentSizeCategoryName", textSize] }
         app.launch()
         XCTAssertTrue(app.navigationBars["Plants"].waitForExistence(timeout: 20), "The app did not open on Plants")
@@ -136,6 +136,9 @@ final class PlantPageTests: XCTestCase {
         XCTAssertTrue(counter.waitForExistence(timeout: 10), "The photo has no counter")
         XCTAssertEqual(counter.label, "In bloom \u{00B7} 1 of 3")
         XCTAssertFalse(app.descendants(matching: .any)["noPhoto"].exists, "Spicebush shows the no-photograph plate")
+        let height = app.descendants(matching: .any)["fact-Height"]
+        XCTAssertTrue(height.waitForExistence(timeout: 5), "The plant page has no Height fact")
+        XCTAssertTrue(height.label.contains("6 to 12 ft"), "Spicebush's height reads: \(height.label)")
         attachScreenshot(app, "plant-page-top")
 
         swipePhotoLeft(app)
@@ -153,6 +156,26 @@ final class PlantPageTests: XCTestCase {
         XCTAssertTrue(chart.exists, "The plant page has no season chart")
         XCTAssertTrue(chart.label.hasPrefix("Through the year. In leaf: March to October; Bloom: March to April"),
                       "The chart says \(chart.label)")
+        // Every range under the chart reads with "to", as plant-page-scrolled.png writes them.
+        let flowers = app.descendants(matching: .any)["fact-Flowers"]
+        XCTAssertTrue(flowers.exists, "The plant page has no Flowers fact")
+        XCTAssertTrue(flowers.label.contains("Mar to Apr"), "Spicebush's flowers read: \(flowers.label)")
+        let growth = app.descendants(matching: .any)["fact-Growth"]
+        XCTAssertTrue(growth.exists, "The plant page has no Growth fact")
+        XCTAssertTrue(growth.label.contains("Slow to moderate (about 1 to 1.5 ft a year); 6 to 12 ft in about 6 to 8 years; fruit in 3 to 6 years"),
+                      "Spicebush's growth reads: \(growth.label)")
+        for fact in [height, flowers, growth] {
+            XCTAssertFalse(fact.label.contains("\u{2013}"), "A fact shows an en dash: \(fact.label)")
+        }
+        // Up a little at a time, until the Where to buy row is on screen above the tab bar, as the picture shows it.
+        let card = app.buttons["whereToBuyCard"]
+        let window = app.windows.firstMatch
+        for _ in 0..<10 where !(card.isHittable && card.frame.maxY < app.tabBars.firstMatch.frame.minY) {
+            window.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.6))
+                .press(forDuration: 0.05, thenDragTo: window.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.45)),
+                       withVelocity: .slow, thenHoldForDuration: 0.3)
+        }
+        XCTAssertTrue(card.isHittable, "The Where to buy row cannot be reached")
         attachScreenshot(app, "plant-page-scrolled")
 
         let usda = app.buttons["usdaLink"]

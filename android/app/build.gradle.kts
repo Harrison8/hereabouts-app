@@ -20,7 +20,7 @@ android {
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner = "garden.hereabouts.app.HereaboutsTestRunner"
     }
 
     // Compiled for Java 17, the same as :core.
@@ -51,6 +51,10 @@ kotlin {
 
 // The shared folders, found the same way here and in the public copy of the app code: shared/ sits next to android/.
 val sharedDir = rootProject.projectDir.resolve("../shared").normalize()
+
+// The screen tests read the website's answers (the plant list for a county, search and filters) from the test app's
+// own assets. Only the test app carries them; the app never does.
+android.sourceSets.getByName("androidTest").assets.srcDir(sharedDir.resolve("bundle/expected"))
 
 /**
  * Copies the bundle into the app's assets: data/, tables/, images/ and the fonts' licences. It leaves out expected/,

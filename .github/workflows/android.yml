@@ -37,9 +37,9 @@ jobs:
             android/gradle/libs.versions.toml
             android/gradle/wrapper/gradle-wrapper.properties
 
-      - name: Build the Debug app and lint it
+      - name: Build the Debug app and lint it, and build the Release app (which has no test switches)
         working-directory: android
-        run: ./gradlew :app:assembleDebug :app:lintDebug --no-daemon
+        run: ./gradlew :app:assembleDebug :app:lintDebug :app:assembleRelease --no-daemon
 
       # The app must never ask for exact alarms: Google Play allows them only for alarm clocks and calendars.
       - name: no-exact-alarm (the merged manifest must not ask for exact alarms)

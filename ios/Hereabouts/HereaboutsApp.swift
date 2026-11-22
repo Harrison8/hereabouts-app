@@ -1,7 +1,7 @@
 // The app's entry point. It loads the shared model and the network services once, and shows the first-open screen
 // until a county is chosen, then the three tabs. Whenever the app comes to the front, and whenever signal comes back,
 // it sends waiting events and checks for newer plant data if a day has passed since the last check. A tapped
-// Saturday reminder opens the Garden tab.
+// Saturday reminder opens the Garden tab. On a fresh launch the opening plays above the first screen (Opening.swift).
 import SwiftUI
 @preconcurrency import UserNotifications
 
@@ -9,6 +9,7 @@ import SwiftUI
 struct HereaboutsApp: App {
     @State private var model: AppModel
     @State private var connectivity: Connectivity
+    @State private var opening: Opening
     private let updater: DataUpdater
     @UIApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
 
@@ -21,7 +22,13 @@ struct HereaboutsApp: App {
         _model = State(initialValue: model)
         updater = DataUpdater(model: model, site: settings.site, dataFolder: settings.folders.data,
                               defaults: model.defaults, isOnline: { connectivity.isOnline })
-        NotificationTaps.handler = { [model] in model.openedFromNotification() }
+        let opening = Opening(geo: model.data.geo, location: model.location)
+        _opening = State(initialValue: opening)
+        // A tapped reminder goes straight to This week, so it also takes the opening away.
+        NotificationTaps.handler = { [model, opening] in
+            opening.stop()
+            model.openedFromNotification()
+        }
     }
 
     var body: some Scene {
@@ -32,6 +39,7 @@ struct HereaboutsApp: App {
                 .environment(model)
                 .environment(connectivity)
                 .tint(Theme.moss)
+                .overlay { OpeningLayer(opening: opening) }
         }
     }
 }
@@ -43,6 +51,17 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
         // Set before launch ends, so a tap that opened the app is not missed.
         UNUserNotificationCenter.current().delegate = self
         return true
+    }
+
+    /// A new window is being made, the first time the app runs or after its window was thrown away. It names the
+    /// window's delegate below, which the phone keeps with the window from then on. The window itself is made as it
+    /// would be anyway.
+    func application(_ application: UIApplication, configurationForConnecting connectingSceneSession: UISceneSession,
+                     options: UIScene.ConnectionOptions) -> UISceneConfiguration {
+        if WindowSceneDelegate.opensFromReminder(options) { Opening.reminderOpenedTheApp() }
+        let configuration = UISceneConfiguration(name: nil, sessionRole: connectingSceneSession.role)
+        configuration.delegateClass = WindowSceneDelegate.self
+        return configuration
     }
 
     /// A reminder was tapped, with the app open or closed. Only the identifier is read here; the tap is passed to the
@@ -61,6 +80,34 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
                                             withCompletionHandler completionHandler:
                                             @escaping (UNNotificationPresentationOptions) -> Void) {
         completionHandler([.banner, .list, .sound])
+    }
+}
+
+/// The window's delegate, named in the window's settings above. SwiftUI makes and runs the window as it would without
+/// it; it only looks at why the window is connecting.
+@MainActor
+final class WindowSceneDelegate: NSObject, UIWindowSceneDelegate {
+    /// The window is connecting, new or brought back after the phone ended the app, before its first frame. When a
+    /// tapped Saturday reminder is why, the opening is taken away, so This week comes straight up.
+    func scene(_ scene: UIScene, willConnectTo session: UISceneSession,
+               options connectionOptions: UIScene.ConnectionOptions) {
+        if Self.opensFromReminder(connectionOptions) { Opening.reminderOpenedTheApp() }
+        #if DEBUG
+        // A screen test's stand-in for a tapped reminder goes the same way. The tap itself is passed on a second
+        // later, so an opening that came up anyway would have been on screen before the tap took it away.
+        if ProcessInfo.processInfo.arguments.contains("-uiTestNotificationTap") {
+            Opening.reminderOpenedTheApp()
+            Task { @MainActor in
+                try? await Task.sleep(for: .seconds(1))
+                NotificationTaps.received()
+            }
+        }
+        #endif
+    }
+
+    /// True when a tapped Saturday reminder is why the window is connecting.
+    static func opensFromReminder(_ options: UIScene.ConnectionOptions) -> Bool {
+        options.notificationResponse?.notification.request.identifier.hasPrefix(ReminderScheduler.idPrefix) ?? false
     }
 }
 

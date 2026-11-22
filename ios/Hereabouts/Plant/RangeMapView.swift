@@ -46,7 +46,7 @@ struct RangeMapView: View {
 
     /// The visitor's county on the map, or nil when there is no position or it falls off the lower 48 states, as on
     /// the website.
-    static func point(_ location: Location?, map: RangeShapes) -> CGPoint? {
+    nonisolated static func point(_ location: Location?, map: RangeShapes) -> CGPoint? {
         guard let lat = location?.lat, let lon = location?.lon, lat.isFinite, lon.isFinite else { return nil }
         let (x, y) = map.point(lon: lon, lat: lat)
         guard x >= 0, x <= map.width, y >= 0, y <= map.height else { return nil }
@@ -61,9 +61,10 @@ struct RangeMapView: View {
     }
 }
 
-/// The map's outlines, read once from the bundle and turned into paths, so scrolling never re-reads them.
-@MainActor
-final class RangeMapShapes {
+/// The map's outlines, read once from the bundle and turned into paths, so scrolling never re-reads them. The plant
+/// page and the opening share them; the opening reads them away from the main thread, and nothing changes them after
+/// they are made.
+final class RangeMapShapes: @unchecked Sendable {
     let shapes: RangeShapes
     let paths: [(String, Path)]
 

@@ -1,7 +1,8 @@
 // The plant page's facts, worded by HereaboutsCore's growingFacts as the website words them. FactGrid: the four in the
 // ruled box (height, width, sun, soil), two to a row as plant-page-top.png draws them, one to a row at the largest
 // text sizes. FactList: the rest (flowers, in fall, growth, feeds), a label at left and its value at right, as
-// plant-page-scrolled.png draws them, the label above its value at the largest text sizes.
+// plant-page-scrolled.png draws them, the label above its value at the largest text sizes. A range in a value reads
+// with "to" (RangeText): "6 to 12 ft", "Mar to Apr".
 import SwiftUI
 
 struct FactGrid: View {
@@ -38,7 +39,7 @@ struct FactGrid: View {
             Text(fact.first ?? "")
                 .font(.body(13, .regular, relativeTo: .footnote))
                 .foregroundStyle(Theme.inkSoft)
-            Text(fact.count > 1 ? fact[1] : "")
+            Text(RangeText.display(fact.count > 1 ? fact[1] : ""))
                 .font(.body(16, .semibold, relativeTo: .callout))
                 .foregroundStyle(Theme.ink)
         }
@@ -47,6 +48,7 @@ struct FactGrid: View {
         .padding(.vertical, 12)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .accessibilityElement(children: .combine)
+        .accessibilityIdentifier("fact-\(fact.first ?? "")")
     }
 }
 
@@ -72,7 +74,7 @@ struct FactList: View {
         let label = Text(fact.first ?? "")
             .font(.body(13, .regular, relativeTo: .footnote))
             .foregroundStyle(Theme.inkSoft)
-        let value = Text(fact.count > 1 ? fact[1] : "")
+        let value = Text(RangeText.display(fact.count > 1 ? fact[1] : ""))
             .font(.body(16, .semibold, relativeTo: .callout))
             .foregroundStyle(Theme.ink)
             .fixedSize(horizontal: false, vertical: true)
@@ -90,5 +92,6 @@ struct FactList: View {
             }
         }
         .accessibilityElement(children: .combine)
+        .accessibilityIdentifier("fact-\(fact.first ?? "")")
     }
 }

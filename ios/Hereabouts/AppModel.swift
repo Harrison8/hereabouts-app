@@ -220,7 +220,7 @@ final class AppModel {
 
 extension AppModel {
     /// The data folder the app ships with: bundle/ inside the app, holding data/, tables/, images/ and fonts/.
-    static var bundleURL: URL {
+    nonisolated static var bundleURL: URL {
         Bundle.main.bundleURL.appendingPathComponent("bundle", isDirectory: true)
     }
 
@@ -232,10 +232,11 @@ extension AppModel {
     /// county lookup the rest of the app uses, as if it had been typed as a ZIP code. `-uiTestFirstOpen` makes it keep
     /// nothing between launches and start on the first-open screen. `-uiTestZip <ZIP code>` works like `-uiTestLocation`
     /// but finds the county and its position from the ZIP code, as typing it would, so the position used for nearby
-    /// shops is set too. The Garden tests add four more: `-uiTestNow <YYYY-MM-DDTHH:mm>` fixes the phone time,
-    /// `-uiTestSaved <id,id>` starts with those plants saved, `-uiTestNotifications <allowed|willAllow|willDeny>`
-    /// sets what the stand-in notification settings answer (with none, the person said no before), and
-    /// `-uiTestNotificationTap` opens the app as if a reminder had been tapped. A Release build reads none of these.
+    /// shops is set too. The Garden tests add three more: `-uiTestNow <YYYY-MM-DDTHH:mm>` fixes the phone time,
+    /// `-uiTestSaved <id,id>` starts with those plants saved, and `-uiTestNotifications <allowed|willAllow|willDeny>`
+    /// sets what the stand-in notification settings answer (with none, the person said no before). Their fourth,
+    /// `-uiTestNotificationTap`, is read by the window's delegate, where a real reminder tap is first seen. A Release
+    /// build reads none of these.
     static func forLaunch(arguments: [String] = ProcessInfo.processInfo.arguments, services: ServiceSettings? = nil,
                           isOnline: @escaping @Sendable () async -> Bool = { false }) -> AppModel {
         let shippedData = bundleURL.appendingPathComponent("data", isDirectory: true)
@@ -298,7 +299,6 @@ extension AppModel {
         if underTest, let ids = testValue(after: "-uiTestSaved", in: arguments) {
             for id in ids.split(separator: ",").map(String.init) where !model.isSaved(id) { model.toggleSaved(id) }
         }
-        if arguments.contains("-uiTestNotificationTap") { NotificationTaps.received() }
         #endif
         // The waiting reminders are planned again at every launch, so a new week's always follow the newest data.
         model.rescheduleReminders()

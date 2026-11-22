@@ -20,7 +20,7 @@ final class ServicesTests: XCTestCase {
     @MainActor
     private func launchApp(freshStart: Bool) -> XCUIApplication {
         let app = XCUIApplication()
-        app.launchArguments = ["-uiTestLocation", "51059", "-hereaboutsBaseURL", server.baseURL]
+        app.launchArguments = ["-uiTestSkipOpening", "-uiTestLocation", "51059", "-hereaboutsBaseURL", server.baseURL]
         if !freshStart { app.launchArguments.append("-uiTestKeepFiles") }
         app.launch()
         XCTAssertTrue(app.tabBars.firstMatch.waitForExistence(timeout: 20), "No tab bar after launch")

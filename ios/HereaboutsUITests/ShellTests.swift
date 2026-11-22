@@ -7,7 +7,7 @@ final class ShellTests: XCTestCase {
         continueAfterFailure = false
         let app = XCUIApplication()
         // Fairfax County, Virginia, so the app skips the first-open screen.
-        app.launchArguments = ["-uiTestLocation", "51059"]
+        app.launchArguments = ["-uiTestSkipOpening", "-uiTestLocation", "51059"]
         app.launch()
 
         let tabBar = app.tabBars.firstMatch

@@ -62,7 +62,10 @@ data class RangeShapes(
 
     companion object {
         /** Reads range-shapes.json. */
-        fun load(file: File): RangeShapes = json.decodeFromString(serializer(), file.readText(Charsets.UTF_8))
+        fun load(file: File): RangeShapes = decode(file.readText(Charsets.UTF_8))
+
+        /** Reads range-shapes.json from its text, as the app reads it from its own files. */
+        fun decode(text: String): RangeShapes = json.decodeFromString(serializer(), text)
 
         /**
          * Splits a path into commands and numbers. Numbers are written like "12", "-3.5" or "1e-3"; spaces and commas

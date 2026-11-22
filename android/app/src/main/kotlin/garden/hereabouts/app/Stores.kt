@@ -1,7 +1,8 @@
 // What the app keeps on the phone, in one DataStore file, under the same keys and with the same meanings as the iPhone
 // app: the chosen county, the saved plants and this week's ticked garden jobs. Each is kept as JSON text. None of it
-// leaves the phone: the app sends nothing, and the manifest keeps it out of Android's backup and out of a copy to a
-// new phone.
+// leaves the phone as kept: events carry only the county's name, never the position, and the manifest keeps it out of
+// Android's backup and out of a copy to a new phone. The same file also holds the analytics id and the time of the
+// last data check.
 package garden.hereabouts.app
 
 import android.content.Context
@@ -9,6 +10,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.core.handlers.ReplaceFileCorruptionHandler
 import androidx.datastore.preferences.core.MutablePreferences
 import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
@@ -72,6 +74,16 @@ object LocationStore {
         return (found as? LocationResult.Found)?.location
     }
 
+    /**
+     * The kept county's five-digit code, without looking it up in the tables. Null when none is kept or what is kept
+     * no longer reads. The reminders read it this way when the app is closed, so they need not load the tables.
+     */
+    fun countyFips(kept: Preferences): String? {
+        val o = parse(kept[key]) as? JsonObject ?: return null
+        val fips = (o["countyFips"] as? JsonPrimitive)?.takeIf { it.isString }?.content ?: return null
+        return fips.takeIf { it.length == 5 && it.all { c -> c in '0'..'9' } }
+    }
+
     /** Keeps the county code and the rounded position of `location`, or forgets it when null. */
     fun save(into: MutablePreferences, location: Location?) {
         if (location == null) {
@@ -105,6 +117,17 @@ object SavedStore {
 
     fun save(into: MutablePreferences, ids: List<String>) {
         into[key] = buildJsonArray { ids.forEach { add(JsonPrimitive(it)) } }.toString()
+    }
+}
+
+/** Keeps whether the Saturday reminders are on, under the iPhone app's key. They are on until turned off. */
+object RemindersStore {
+    val key = booleanPreferencesKey("hereabouts.reminders")
+
+    fun load(kept: Preferences): Boolean = kept[key] ?: true
+
+    fun save(into: MutablePreferences, on: Boolean) {
+        into[key] = on
     }
 }
 

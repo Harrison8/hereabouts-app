@@ -43,13 +43,14 @@ class ShellTest {
             }
         }
 
-        ActivityScenario.launch(MainActivity::class.java).use {
+        launchApp().use {
             compose.waitUntil(30_000) { compose.onAllNodes(hasTestTag("tabs")).fetchSemanticsNodes().isNotEmpty() }
 
-            for (name in listOf("Plants", "Garden", "Settings")) {
+            // Each tab and the title its screen shows.
+            for ((name, title) in listOf("Plants" to "Plants", "Garden" to "My garden", "Settings" to "Settings")) {
                 compose.onNodeWithTag("tab-$name").assertExists("The tab bar has no $name tab").performClick()
                 compose.waitUntil(10_000) {
-                    compose.onAllNodes(hasTestTag("title") and hasText(name)).fetchSemanticsNodes().isNotEmpty()
+                    compose.onAllNodes(hasTestTag("title") and hasText(title)).fetchSemanticsNodes().isNotEmpty()
                 }
                 compose.waitForIdle()
                 screenshot(name)

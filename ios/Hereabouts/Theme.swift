@@ -22,6 +22,8 @@ enum Theme {
     /// Text on moss, and the paler green of a count on a chosen chip.
     static let onMoss = Color.white
     static let mossSoft = Color(hex: 0xC9D3BC)
+    /// The design rules' error red, behind the bin of a saved plant's Remove button.
+    static let error = Color(hex: 0xA8321F)
 
     /// The bloom colour swatches, as the brand kit draws them.
     static func swatch(_ color: String) -> Color {

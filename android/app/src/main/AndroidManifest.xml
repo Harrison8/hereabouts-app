@@ -1,5 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- The app asks for no permissions: everything it shows ships inside it.
+<!-- The app asks for five permissions. Three are granted at install with no prompt: the internet, to send the
+     website's allowed events, fetch newer plant data and photos (data only, never code) and look up a typed street
+     address with the Census Bureau; the network state, to know when the phone has signal; and the phone's restart
+     message, so the Saturday reminder is set again after the phone is turned off and on. The rough location (about
+     a kilometre) is asked for only when the person taps "Use my location", and is used once to find their county.
+     The app never asks for the exact location or for the location in the background. On Android 13 and later the
+     right to post notifications is asked for the first time a plant is saved, never at first open.
+     The Saturday reminder uses an alarm the phone may move by a few minutes to save battery, so the app needs no
+     right to set alarms at an exact time.
      What it keeps (the county, the saved plants, the ticked jobs) stays on this phone: Android's backup to the
      person's Google account is off, and the extraction rules keep it out of a copy to a new phone as well, which
      Android 12 and later make whatever allowBackup says. On Android 8 to 11, allowBackup="false" alone stops both
@@ -8,9 +16,16 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+
     <application
         android:allowBackup="false"
         android:dataExtractionRules="@xml/data_extraction_rules"
+        android:enableOnBackInvokedCallback="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
@@ -19,12 +34,30 @@
         tools:targetApi="31">
         <activity
             android:name=".MainActivity"
-            android:exported="true">
+            android:exported="true"
+            android:theme="@style/Theme.Hereabouts.Launch"
+            android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <!-- Posts the Saturday reminder when its alarm goes off, then sets the next one. Only the app's own alarm
+             reaches it. -->
+        <receiver
+            android:name=".reminders.ReminderReceiver"
+            android:exported="false">
+        </receiver>
+        <!-- Sets the Saturday reminder again after the phone restarts or its clock or time zone changes. -->
+        <receiver
+            android:name=".reminders.RescheduleReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.TIME_SET" />
+                <action android:name="android.intent.action.TIMEZONE_CHANGED" />
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>
