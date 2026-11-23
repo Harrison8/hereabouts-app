@@ -47,7 +47,9 @@ struct WhereToBuySheet: View {
             if view.hasAffiliate && !typeSize.isAccessibilitySize { commissionNote.background(Color.white) }
         }
         .background(Color.white)
-        .presentationDetents([.medium, .large])
+        // At the largest text sizes the half-height sheet holds only the title and part of the summary, with no seller in
+        // view, so there it opens at full height.
+        .presentationDetents(typeSize.isAccessibilitySize ? [.large] : [.medium, .large])
         .presentationDragIndicator(.visible)
     }
 

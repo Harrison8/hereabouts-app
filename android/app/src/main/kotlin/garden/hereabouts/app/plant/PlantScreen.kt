@@ -132,7 +132,7 @@ fun PlantScreen(
 
     Scaffold(
         modifier = Modifier.testTag("plantPage"),
-        containerColor = Brand.ground,
+        containerColor = Brand.packet,
         topBar = {
             TopAppBar(
                 title = {},
@@ -158,8 +158,8 @@ fun PlantScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Brand.ground,
-                    scrolledContainerColor = Brand.ground,
+                    containerColor = Brand.packet,
+                    scrolledContainerColor = Brand.packet,
                     navigationIconContentColor = Brand.ink,
                     actionIconContentColor = Brand.ink,
                 ),

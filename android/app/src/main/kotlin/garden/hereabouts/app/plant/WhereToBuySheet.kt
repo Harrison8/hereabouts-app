@@ -56,6 +56,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import garden.hereabouts.app.AppModel
 import garden.hereabouts.app.Brand
+import garden.hereabouts.app.PlainDragHandle
 import garden.hereabouts.app.Figtree
 import garden.hereabouts.app.R
 import garden.hereabouts.app.YoungSerif
@@ -90,7 +91,7 @@ fun WhereToBuySheet(
     // view, so there it opens at full height.
     val sheet = rememberModalBottomSheetState(skipPartiallyExpanded = large)
     val scope = rememberCoroutineScope()
-    ModalBottomSheet(onDismissRequest = onClose, sheetState = sheet, containerColor = Brand.ground) {
+    ModalBottomSheet(onDismissRequest = onClose, sheetState = sheet, containerColor = Brand.ground, dragHandle = { PlainDragHandle() }) {
         Column(Modifier.weight(1f, fill = false).verticalScroll(rememberScrollState()).padding(bottom = 24.dp)) {
             Header(
                 summary = buySummary(plant, view, location),

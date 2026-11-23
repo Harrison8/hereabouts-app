@@ -181,4 +181,15 @@ class LabelsTest {
         assertFalse(Labels.isMono("Sun"))
         assertFalse(Labels.isMono("Soil"))
     }
+
+    @Test
+    fun creditTextKeepsTheLicenceNameTogether() {
+        val nb = "\u00A0"
+        val hy = "\u2011"
+        assertEquals("Jane Doe, CC${nb}BY${hy}SA${nb}4.0", Labels.creditText("Jane Doe, CC BY-SA 4.0"))
+        assertEquals("A, B, Public${nb}domain", Labels.creditText("A, B, Public domain"))
+        assertEquals("No licence here", Labels.creditText("No licence here"))
+        assertEquals("Name, Some Place", Labels.creditText("Name, Some Place"))
+        assertEquals("", Labels.creditText(""))
+    }
 }

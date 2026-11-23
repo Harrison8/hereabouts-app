@@ -30,6 +30,7 @@ struct FactGrid: View {
                 .fixedSize(horizontal: false, vertical: true)
             }
         }
+        .background(Theme.packet)
         .clipShape(RoundedRectangle(cornerRadius: Theme.brandCorner))
         .overlay(RoundedRectangle(cornerRadius: Theme.brandCorner).strokeBorder(Theme.ruleStrong, lineWidth: 1))
     }

@@ -289,7 +289,7 @@ fun PhotoCreditsPage(model: AppModel, onBack: () -> Unit) {
                 ) {
                     Text(name, style = TextStyle(fontFamily = YoungSerif, fontSize = 17.sp, lineHeight = 22.sp), color = Brand.ink)
                     for (credit in credits) {
-                        Text(credit, style = RowText.copy(fontSize = 15.sp, lineHeight = 20.sp), color = Brand.inkSoft)
+                        Text(Labels.creditText(credit), style = RowText.copy(fontSize = 15.sp, lineHeight = 20.sp), color = Brand.inkSoft)
                     }
                 }
                 HorizontalDivider(color = Brand.rule)

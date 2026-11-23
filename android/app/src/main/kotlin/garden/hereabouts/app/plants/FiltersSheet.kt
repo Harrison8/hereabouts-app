@@ -58,6 +58,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import garden.hereabouts.app.Brand
+import garden.hereabouts.app.PlainDragHandle
 import garden.hereabouts.app.Figtree
 import garden.hereabouts.app.R
 import garden.hereabouts.app.YoungSerif
@@ -132,6 +133,7 @@ fun FiltersSheet(
         onDismissRequest = onClose,
         sheetState = sheet,
         containerColor = Brand.ground,
+        dragHandle = { PlainDragHandle() },
     ) {
         Column(Modifier.weight(1f, fill = false).verticalScroll(rememberScrollState()).padding(bottom = 16.dp)) {
             Row(

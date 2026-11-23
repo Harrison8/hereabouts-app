@@ -316,4 +316,15 @@ public enum Labels {
     public static func plantTitle(_ p: Plant) -> String {
         "\(p.common) (\(p.sci)): native range and where to buy \u{00B7} \(siteName)"
     }
+
+    /// creditText: a photo credit with its licence name held together. The last ", " part is the
+    /// licence when it starts with CC, Public, PD or GFDL; its spaces become no-break spaces and its
+    /// hyphens become no-break hyphens, so a line never breaks inside "CC BY-SA 4.0".
+    public static func creditText(_ credit: String) -> String {
+        guard let cut = credit.range(of: ", ", options: .backwards) else { return credit }
+        let licence = String(credit[cut.upperBound...])
+        guard ["CC", "Public", "PD", "GFDL"].contains(where: { licence.hasPrefix($0) }) else { return credit }
+        return String(credit[..<cut.upperBound])
+            + licence.replacingOccurrences(of: " ", with: "\u{00A0}").replacingOccurrences(of: "-", with: "\u{2011}")
+    }
 }

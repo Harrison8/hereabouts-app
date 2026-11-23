@@ -283,4 +283,17 @@ object Labels {
 
     /** plantTitle: a plant page's title. */
     fun plantTitle(p: Plant): String = "${p.common} (${p.sci}): native range and where to buy · $SITE_NAME"
+
+    /**
+     * creditText: a photo credit with its licence name held together. The last ", " part is the
+     * licence when it starts with CC, Public, PD or GFDL; its spaces become no-break spaces and its
+     * hyphens become no-break hyphens, so a line never breaks inside "CC BY-SA 4.0".
+     */
+    fun creditText(credit: String): String {
+        val cut = credit.lastIndexOf(", ")
+        if (cut < 0) return credit
+        val licence = credit.substring(cut + 2)
+        if (!(licence.startsWith("CC") || licence.startsWith("Public") || licence.startsWith("PD") || licence.startsWith("GFDL"))) return credit
+        return credit.substring(0, cut + 2) + licence.replace(' ', '\u00A0').replace('-', '\u2011')
+    }
 }

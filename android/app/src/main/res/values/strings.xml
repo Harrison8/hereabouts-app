@@ -40,6 +40,7 @@
     <string name="jobs_one">1 job this week</string>
     <string name="jobs_many">%1$d jobs this week</string>
     <string name="remove">Remove</string>
+    <string name="remove_plant">Remove %1$s</string>
     <string name="job_or">Or: %1$s</string>
     <string name="your_plant">Your %1$s</string>
     <string name="job_when">When</string>

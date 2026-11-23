@@ -119,7 +119,7 @@ private fun Words(plant: Plant, meta: String) {
         val credit = Labels.mainPhoto(plant)?.photo?.credit.orEmpty()
         if (credit.isNotEmpty()) {
             Text(
-                credit,
+                Labels.creditText(credit),
                 style = TextStyle(fontFamily = Figtree, fontSize = 10.sp, lineHeight = 14.sp, color = Brand.creditGrey),
                 modifier = Modifier.padding(top = 2.dp),
             )

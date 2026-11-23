@@ -51,6 +51,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import garden.hereabouts.app.AppModel
 import garden.hereabouts.app.Brand
+import garden.hereabouts.app.PlainDragHandle
 import garden.hereabouts.app.CareTables
 import garden.hereabouts.app.R
 import garden.hereabouts.app.openInBrowser
@@ -75,7 +76,7 @@ fun JobSheet(
     val scope = rememberCoroutineScope()
     // The sources of every job in the row, each once, in order.
     val sources = row.jobs.flatMap { model.care.sources[it.ruleId].orEmpty() }.distinctBy { it.url }
-    ModalBottomSheet(onDismissRequest = onClose, sheetState = sheet, containerColor = Brand.ground) {
+    ModalBottomSheet(onDismissRequest = onClose, sheetState = sheet, containerColor = Brand.ground, dragHandle = { PlainDragHandle() }) {
         Column(Modifier.weight(1f, fill = false).verticalScroll(rememberScrollState()).padding(bottom = 24.dp)) {
             Header(row.heading, onDone = { scope.launch { sheet.hide() }.invokeOnCompletion { onClose() } })
             for (id in row.plantIds) week.plant(id)?.let { PlantLine(model, it) }
@@ -123,7 +124,7 @@ private fun PlantLine(model: AppModel, plant: Plant) {
         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text(stringResource(R.string.your_plant, plant.common), style = BodyStyle)
             val credit = Labels.mainPhoto(plant)?.photo?.credit
-            if (!credit.isNullOrEmpty()) Text(credit, style = CreditStyle)
+            if (!credit.isNullOrEmpty()) Text(Labels.creditText(credit), style = CreditStyle)
         }
     }
 }

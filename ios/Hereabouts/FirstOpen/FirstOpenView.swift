@@ -145,6 +145,7 @@ struct FirstOpenView: View {
     @State private var myLocation: MyLocation?
     @State private var latest = LatestLookup()
     @FocusState private var focus: Mode?
+    @Environment(\.dynamicTypeSize) private var typeSize
 
     /// In the Settings sheet, which has its own "Change location" title.
     private var inSheet: Bool { onChosen != nil }
@@ -156,24 +157,32 @@ struct FirstOpenView: View {
     /// from them cannot flip back and forth. Zero until the first measurement.
     @State private var screenHeight: CGFloat = 0
     @State private var formHeight: CGFloat = 0
-    @State private var actionsHeight: CGFloat = 0
+    @State private var buttonHeight: CGFloat = 0
+    @State private var linksHeight: CGFloat = 0
     @State private var headerHeight: CGFloat = 0
     @State private var ledeHeight: CGFloat = 0
 
     /// The button and both links stay pinned above the keyboard while they leave room for the label, the field and the
-    /// county. At the largest text sizes they do not, so they follow the county in the scroll area instead.
+    /// county. At the largest text sizes they do not, so the two links follow the county in the scroll area instead;
+    /// the button stays pinned, so the screen's one action is always in view.
     private var pinsActions: Bool {
         screenHeight == 0 || pinnedHeight + formHeight + 16 <= screenHeight
     }
 
     /// The button and links with the pinned area's padding above and below them.
-    private var pinnedHeight: CGFloat { actionsHeight + 14 }
+    private var pinnedHeight: CGFloat { buttonHeight + 4 + linksHeight + 14 }
+
+    /// What the pinned area takes: the button and both links, or the button alone at the largest text sizes.
+    private var pinnedNow: CGFloat { pinsActions ? pinnedHeight : buttonHeight + 14 }
 
     /// The lede is left out while the number pad leaves no room for it above the field. The title always stays.
     private var showsLede: Bool {
-        let room = screenHeight - (pinsActions ? pinnedHeight : 0) - formHeight
+        let room = screenHeight - pinnedNow - formHeight
         return screenHeight == 0 || headerHeight + ledeHeight <= room
     }
+
+    /// The number pad's Done is shown at the accessibility text sizes, where the scrolling needs a way to close the pad.
+    private var showsDone: Bool { mode == .zip && typeSize.isAccessibilitySize }
 
     var body: some View {
         // The stack measures the height between the top bar and the keyboard, which the scroll view alone may not give,
@@ -192,6 +201,13 @@ struct FirstOpenView: View {
                 focus = newMode
             }
             .toolbar {
+                // The number pad has no return key, so it gets the system's Done to close it.
+                if showsDone {
+                    ToolbarItemGroup(placement: .keyboard) {
+                        Spacer()
+                        Button("Done") { focus = nil }
+                    }
+                }
                 if let onCancel {
                     ToolbarItem(placement: .cancellationAction) {
                         Button("Cancel") {
@@ -213,9 +229,10 @@ struct FirstOpenView: View {
                     header
                     form
                     if !pinsActions {
-                        actions
-                            .padding(.top, 16)
-                            .padding(.bottom, 16)
+                        links
+                            .padding(.top, 8)
+                            // Room to scroll the links fully clear of the pinned button.
+                            .padding(.bottom, 16 + pinnedNow)
                     }
                 }
                 .padding(.horizontal, 24)
@@ -224,14 +241,24 @@ struct FirstOpenView: View {
             // Only tapping the title closes the number pad, so scrolling at large text sizes keeps it up.
             .scrollDismissesKeyboard(.never)
             .background(Color.white)
-            .safeAreaInset(edge: .bottom, spacing: 0) {
-                if pinsActions {
-                    actions
-                        .padding(.horizontal, 24)
-                        .padding(.top, 10)
-                        .padding(.bottom, 4)
-                        .background(Color.white)
+            // Nothing may show under the clock and the status icons: a solid white band covers the status bar.
+            .overlay(alignment: .top) {
+                if !inSheet {
+                    Color.clear.frame(height: 0)
+                        .background(Color.white.ignoresSafeArea(edges: .top))
                 }
+            }
+            .safeAreaInset(edge: .bottom, spacing: 0) {
+                VStack(alignment: .leading, spacing: 4) {
+                    button
+                    if pinsActions { links }
+                }
+                .padding(.horizontal, 24)
+                .padding(.top, 10)
+                // The system's Done floats over the content just above the number pad and takes the touches there, so
+                // the pinned area leaves it room instead of putting a link or the button underneath it.
+                .padding(.bottom, showsDone && focus == .zip ? 52 : 4)
+                .background(Color.white)
             }
             // The field and the county found are kept in view as the keyboard comes up and as the county appears.
             .onChange(of: focus) { _, _ in keepFormInView(scroller) }
@@ -244,10 +271,22 @@ struct FirstOpenView: View {
 
     private func keepFormInView(_ scroller: ScrollViewProxy) {
         guard focus != nil || outcome != nil else { return }
-        withAnimation { scroller.scrollTo(Self.statusID, anchor: .bottom) }
+        // The county found is kept in view under the field. Before there is one, when the label and the field are
+        // taller than the room above the button (the largest text with the number pad up), the field wins.
+        let fits = screenHeight == 0 || formHeight <= screenHeight - pinnedNow
+        withAnimation {
+            if fits || outcome != nil {
+                // With a county or a message to show, its bottom goes right above the pinned button, even when that
+                // scrolls the label and part of the field off the top. The answer to what was typed is never covered.
+                scroller.scrollTo(Self.statusID, anchor: .bottom)
+            } else {
+                scroller.scrollTo(Self.formID, anchor: .top)
+            }
+        }
     }
 
     private static let statusID = "status"
+    private static let formID = "form"
 
     // MARK: Parts
 
@@ -312,6 +351,7 @@ struct FirstOpenView: View {
             .id(Self.statusID)
         }
         .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { formHeight = $0 }
+        .id(Self.formID)
     }
 
     @ViewBuilder
@@ -380,15 +420,6 @@ struct FirstOpenView: View {
         }
     }
 
-    /// The button, then the two links under it.
-    private var actions: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            button
-            links
-        }
-        .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { actionsHeight = $0 }
-    }
-
     private var links: some View {
         VStack(alignment: .leading, spacing: 0) {
             Button(mode == .zip ? "Use a town or street address instead" : "Use a ZIP code instead") {
@@ -400,6 +431,7 @@ struct FirstOpenView: View {
         }
         .buttonStyle(LinkButtonStyle())
         .disabled(busy)
+        .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { linksHeight = $0 }
     }
 
     private var button: some View {
@@ -408,13 +440,12 @@ struct FirstOpenView: View {
         } label: {
             Text(buttonTitle)
                 .font(.body(17, .semibold, relativeTo: .headline))
-                .foregroundStyle(.white)
-                .frame(maxWidth: .infinity, minHeight: 50)
-                .background(Theme.moss.opacity(buttonEnabled ? 1 : 0.4),
-                            in: RoundedRectangle(cornerRadius: Theme.brandCorner))
         }
-        .buttonStyle(.plain)
+        // The style draws both looks itself. A disabled plain button is dimmed by the system, which made the waiting
+        // words about 2 to 1; .disabled stays so VoiceOver still says the button is unavailable.
+        .buttonStyle(ContinueButtonStyle(waiting: !buttonEnabled))
         .disabled(!buttonEnabled)
+        .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { buttonHeight = $0 }
         .accessibilityIdentifier("continue")
     }
 
@@ -514,5 +545,28 @@ private struct LinkButtonStyle: ButtonStyle {
             .opacity(configuration.isPressed || !isEnabled ? 0.5 : 1)
             .frame(minHeight: 44, alignment: .leading)
             .contentShape(Rectangle())
+    }
+}
+
+/// The first-open button. Waiting for a county: white with a hairline and grey words that read at 4.5 to 1 or better.
+/// Ready: moss with white words. The colours are the style's own, so the system's dimming of a disabled button does
+/// not change them.
+struct ContinueButtonStyle: ButtonStyle {
+    let waiting: Bool
+
+    static let waitingTextHex = Theme.inkFaintHex
+    static let waitingBackgroundHex: UInt32 = 0xFFFFFF
+
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .foregroundStyle(waiting ? Color(hex: Self.waitingTextHex) : Color.white)
+            .frame(maxWidth: .infinity, minHeight: 50)
+            .background(waiting ? Color(hex: Self.waitingBackgroundHex) : Theme.moss, in: RoundedRectangle(cornerRadius: Theme.brandCorner))
+            .overlay {
+                if waiting {
+                    RoundedRectangle(cornerRadius: Theme.brandCorner).strokeBorder(Theme.ruleStrong, lineWidth: 1)
+                }
+            }
+            .opacity(configuration.isPressed ? 0.85 : 1)
     }
 }

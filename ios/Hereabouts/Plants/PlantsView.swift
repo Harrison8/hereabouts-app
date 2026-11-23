@@ -20,6 +20,9 @@ struct PlantsView: View {
     @State private var showingFilters = false
     @State private var changingLocation = false
     @State private var searchTimer: Task<Void, Never>?
+    /// Whether the search field is in use. At the accessibility text sizes the county line and the chips step aside
+    /// while it is, so the first result shows above the keyboard.
+    @State private var searchPresented = false
     /// The last search sent as plant_search, normalised, so the same search is not sent twice (lastSentSearch).
     @State private var lastSentSearch = ""
 
@@ -58,7 +61,7 @@ struct PlantsView: View {
             .scrollDismissesKeyboard(.immediately)
             .background(Color.white)
             .navigationTitle("Plants")
-            .searchable(text: $filter.search, placement: .navigationBarDrawer(displayMode: .always),
+            .searchable(text: $filter.search, isPresented: $searchPresented, placement: .navigationBarDrawer(displayMode: .always),
                         prompt: Text("Search \(nativeCount) plants"))
             .onSubmit(of: .search) { sendSearchEvent() }
             .navigationDestination(for: String.self) { id in
@@ -103,7 +106,8 @@ struct PlantsView: View {
 
     @ViewBuilder
     private func header(nativeCount: Int, shownCount: Int, st: FilterState, data: AppData) -> some View {
-        if let loc = model.location {
+        let makingRoom = typeSize.isAccessibilitySize && searchPresented
+        if let loc = model.location, !makingRoom {
             CountyLine(color: Theme.moss, weight: .medium) {
                 Button {
                     changingLocation = true
@@ -136,7 +140,7 @@ struct PlantsView: View {
         if connectivity.isOffline {
             OfflineBanner()
         }
-        typeChips(st: st, data: data)
+        if !makingRoom { typeChips(st: st, data: data) }
         listHead(shownCount: shownCount)
     }
 

@@ -73,7 +73,7 @@ struct PlantRow: View {
                 .font(.body(14, .regular, relativeTo: .footnote))
                 .foregroundStyle(Theme.inkSoft)
             if let credit = Labels.mainPhoto(plant)?.photo.credit, !credit.isEmpty {
-                Text(credit)
+                Text(Labels.creditText(credit))
                     .font(.body(10, .regular, relativeTo: .caption2))
                     .foregroundStyle(Theme.creditGrey)
                     .padding(.top, 2)

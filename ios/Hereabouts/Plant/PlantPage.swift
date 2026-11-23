@@ -61,7 +61,7 @@ struct PlantPage: View {
                 .padding(.bottom, 32)
             }
         }
-        .background(Color.white)
+        .background(Theme.packet)
         .navigationTitle(plant.common)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {

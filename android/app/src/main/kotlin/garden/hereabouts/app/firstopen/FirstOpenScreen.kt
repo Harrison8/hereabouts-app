@@ -14,6 +14,7 @@
 package garden.hereabouts.app.firstopen
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -29,7 +30,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.statusBarsIgnoringVisibility
+import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
@@ -62,6 +67,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.input.pointer.pointerInput
@@ -204,6 +211,7 @@ private val Corner = RoundedCornerShape(4.dp)
  * room between that bar and the keyboard; there it leaves out the wordmark, title and lede. `onChosen` runs after the
  * county is set.
  */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun FirstOpenScreen(model: AppModel, modifier: Modifier = Modifier, inSheet: Boolean = false, onChosen: () -> Unit = {}) {
     val data by model.data.collectAsStateWithLifecycle()
@@ -224,6 +232,7 @@ fun FirstOpenScreen(model: AppModel, modifier: Modifier = Modifier, inSheet: Boo
     var firstFocus by remember { mutableStateOf(true) }
     val fieldFocus = remember { FocusRequester() }
     val statusInView = remember { BringIntoViewRequester() }
+    val fieldInView = remember { BringIntoViewRequester() }
     val statusAndActionsInView = remember { BringIntoViewRequester() }
 
     // Heights measured on screen, none of which depends on where the button and links are placed, so the choice made
@@ -317,13 +326,26 @@ fun FirstOpenScreen(model: AppModel, modifier: Modifier = Modifier, inSheet: Boo
     }
     // The county found is kept in view as the keyboard comes up and as the county appears. When the button and links
     // follow it in the scroll area, they are brought into view with it if there is room for all three.
-    LaunchedEffect(focused, outcome, screenHeight, pinsActions, formHeight, viewportHeight, statusAndActionsHeight) {
+    // The keyboard's height is a key too, and the scroll is made again once the keyboard has stopped moving: on the
+    // first launch the county can appear while the keyboard is still rising, and one scroll made then (on API 36)
+    // left the field and the county under the button.
+    val imeBottom = WindowInsets.ime.getBottom(density)
+    LaunchedEffect(focused, outcome, screenHeight, pinsActions, formHeight, viewportHeight, statusAndActionsHeight, imeBottom) {
         if (!focused && outcome == null) return@LaunchedEffect
-        if (!pinsActions && statusAndActionsHeight in 1..viewportHeight) {
-            statusAndActionsInView.bringIntoView()
-        } else {
-            statusInView.bringIntoView()
+        suspend fun bringIntoView() {
+            if (viewportHeight in 1 until formHeight) {
+                // Too little room for the field and the county together (the largest text with the keyboard up): the
+                // field wins, so what is being typed stays in view.
+                fieldInView.bringIntoView()
+            } else if (!pinsActions && statusAndActionsHeight in 1..viewportHeight) {
+                statusAndActionsInView.bringIntoView()
+            } else {
+                statusInView.bringIntoView()
+            }
         }
+        bringIntoView()
+        delay(350)
+        bringIntoView()
     }
     // The screen closed some other way, such as Back: a lookup still waiting sets nothing.
     DisposableEffect(Unit) { onDispose { latest.supersede() } }
@@ -333,11 +355,26 @@ fun FirstOpenScreen(model: AppModel, modifier: Modifier = Modifier, inSheet: Boo
     val placeLabel = stringResource(R.string.town_or_address)
     val zipLabel = stringResource(R.string.zip_code)
 
+    // Nothing may show under the clock and status icons: a solid band is drawn over the status bar's height, and the
+    // form is kept below it even while the keyboard is up.
+    val statusTop = WindowInsets.statusBarsIgnoringVisibility.getTop(density).toFloat()
+    val frame = WindowInsets.safeDrawing.union(WindowInsets.statusBarsIgnoringVisibility)
     Column(
         modifier
             .fillMaxSize()
             .background(Brand.ground)
-            .then(if (inSheet) Modifier else Modifier.windowInsetsPadding(WindowInsets.safeDrawing))
+            .then(
+                if (inSheet) {
+                    Modifier
+                } else {
+                    Modifier
+                        .drawWithContent {
+                            drawContent()
+                            drawRect(Brand.ground, size = Size(size.width, statusTop))
+                        }
+                        .windowInsetsPadding(frame)
+                },
+            )
             .onSizeChanged { screenHeight = it.height },
     ) {
         Column(
@@ -405,6 +442,7 @@ fun FirstOpenScreen(model: AppModel, modifier: Modifier = Modifier, inSheet: Boo
                     .heightIn(min = 56.dp)
                     .border(2.dp, Brand.moss, Corner)
                     .focusRequester(fieldFocus)
+                    .bringIntoViewRequester(fieldInView)
                     .onFocusChanged { focused = it.isFocused }
                 val fieldStyle = TextStyle(fontFamily = Figtree, fontSize = 24.sp, color = Brand.ink)
                 val decoration: @Composable (@Composable () -> Unit) -> Unit = { inner ->
@@ -513,9 +551,11 @@ private fun Actions(
             colors = ButtonDefaults.buttonColors(
                 containerColor = Brand.moss,
                 contentColor = Color.White,
-                disabledContainerColor = Brand.moss.copy(alpha = 0.4f),
-                disabledContentColor = Color.White,
+                // Waiting for a county: white with a hairline, grey words that still read (4.5 to 1 or better).
+                disabledContainerColor = Brand.ground,
+                disabledContentColor = Brand.inkFaint,
             ),
+            border = if (buttonEnabled) null else BorderStroke(1.dp, Brand.ruleStrong),
             modifier = Modifier.fillMaxWidth().heightIn(min = 50.dp).testTag("continue"),
         ) {
             Text(buttonTitle, style = BodyText.copy(fontWeight = FontWeight.SemiBold))

@@ -47,7 +47,7 @@ Each of these is in the iPhone app's string file and in the Android app's string
 | Nothing to do this week | Garden screen: line under a saved plant with no job this week |
 | 1 job this week | Garden screen: line under a saved plant |
 | {n} jobs this week | Garden screen: line under a saved plant |
-| Remove | Garden screen: swipe action on a saved plant, and its spoken name |
+| Remove | Garden screen: the accessibility action on a saved plant |
 | Or: {job} | Job sheet: heading of a second job that shares the row |
 | Your {plant} | Job sheet: line beside the plant's photo |
 | When | Job sheet: label |
@@ -55,6 +55,7 @@ Each of these is in the iPhone app's string file and in the Android app's string
 | Sources | Job sheet: label |
 | Opens outside the app | Spoken hint on every link that leaves the app |
 | Save {plant} | Spoken name of every save button |
+| Remove {plant} | Garden screen: spoken name of the swipe-to-remove button on a saved plant |
 | Saved | Spoken state of a saved plant; the plant page button once saved |
 | Not saved | Spoken state of a plant that is not saved |
 | Save | Plant page: button |

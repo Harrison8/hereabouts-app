@@ -79,11 +79,7 @@ final class PlantsTests: XCTestCase {
     private func search(_ app: XCUIApplication, _ text: String) {
         let field = app.searchFields.firstMatch
         XCTAssertTrue(field.waitForExistence(timeout: 10), "No search field")
-        let focused = { (field.value(forKey: "hasKeyboardFocus") as? Bool) ?? false }
-        field.tap()
-        if !StubServer.wait(3, until: focused) { field.tap() }
-        _ = StubServer.wait(3, until: focused)
-        field.typeText(text)
+        field.typeReliably(text)
     }
 
     @MainActor
@@ -309,7 +305,8 @@ final class PlantsTests: XCTestCase {
         XCTAssertTrue(StubServer.wait(5) { !show.exists }, "The panel did not close")
         XCTAssertTrue(StubServer.wait(5) { filters.isSelected }, "The Filters chip is not shown as chosen")
         XCTAssertEqual(filters.value as? String, "1 chosen")
-        XCTAssertGreaterThanOrEqual(filters.frame.height, 44, "The Filters chip is smaller than 44 points")
+        // 0.01 point tolerance: iOS 17.5 gave 43.99999999999997.
+        XCTAssertGreaterThanOrEqual(filters.frame.height, 44 - 0.01, "The Filters chip is smaller than 44 points")
         attachScreenshot(app, "Filters chip on")
 
         // Fairfax has three full-shade trees. Choose Trees, then search a name no tree has: the Trees chip stays, chosen,

@@ -28,6 +28,8 @@ object Brand {
     val ink = Color(0xFF16211A)
     /** Secondary text, such as an unselected tab. */
     val inkSoft = Color(0xFF52605A)
+    /** The words of a control that is waiting, such as the first-open button before a county is found. */
+    val inkFaint = Color(0xFF67726B)
     /** Hairlines and the selected tab's pill. */
     val rule = Color(0xFFE1E6DB)
     /** Stronger lines, such as a field's outline. */

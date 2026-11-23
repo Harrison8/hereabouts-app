@@ -43,7 +43,7 @@ private val ValueStyle =
 fun FactGrid(facts: List<List<String>>, modifier: Modifier = Modifier) {
     val columns = if (isLargeText()) 1 else 2
     val shape = RoundedCornerShape(4.dp)
-    Column(modifier.fillMaxWidth().clip(shape).border(1.dp, Brand.ruleStrong, shape)) {
+    Column(modifier.fillMaxWidth().clip(shape).background(Brand.packet).border(1.dp, Brand.ruleStrong, shape)) {
         facts.chunked(columns).forEachIndexed { r, row ->
             if (r > 0) Box(Modifier.fillMaxWidth().height(1.dp).background(Brand.ruleStrong))
             Row(Modifier.fillMaxWidth().height(IntrinsicSize.Min)) {

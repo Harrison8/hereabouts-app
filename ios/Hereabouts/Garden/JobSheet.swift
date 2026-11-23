@@ -84,7 +84,7 @@ struct JobSheet: View {
                     .font(.body(17, .regular, relativeTo: .body))
                     .foregroundStyle(Theme.ink)
                 if let credit = Labels.mainPhoto(plant)?.photo.credit, !credit.isEmpty {
-                    Text(credit)
+                    Text(Labels.creditText(credit))
                         .font(.body(10, .regular, relativeTo: .caption2))
                         .foregroundStyle(Theme.creditGrey)
                 }

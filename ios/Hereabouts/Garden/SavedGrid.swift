@@ -30,11 +30,15 @@ struct SavedGrid: View {
                 Text("Saved plants")
                     .font(.display(.title2))
                     .foregroundStyle(Theme.ink)
+                    .fixedSize(horizontal: false, vertical: true)
                     .accessibilityAddTraits(.isHeader)
                 Spacer(minLength: 0)
+                // The count keeps its own width, so a large text size never clips it.
                 Text("\(plants.count)")
                     .font(.body(17, .regular, relativeTo: .body))
                     .foregroundStyle(Theme.inkSoft)
+                    .fixedSize()
+                    .layoutPriority(1)
                     .accessibilityLabel(plants.count == 1 ? "1 plant" : "\(plants.count) plants")
                     .accessibilityIdentifier("savedCount")
             }
@@ -44,7 +48,7 @@ struct SavedGrid: View {
             VStack(spacing: 0) {
                 ForEach(Array(plants.enumerated()), id: \.element.id) { i, plant in
                     if i > 0 { Theme.rule.frame(height: 1) }
-                    SwipeToRemove(id: plant.id, openId: $openId, swiped: { swipes.mark() },
+                    SwipeToRemove(id: plant.id, name: plant.common, openId: $openId, swiped: { swipes.mark() },
                                   remove: { remove(plant.id) }, swipeable: swipeable) {
                         row(plant)
                     }
@@ -113,7 +117,7 @@ struct SavedGrid: View {
                 .foregroundStyle(jobCount(plant.id) == 0 ? Theme.inkSoft : Theme.ink)
                 .padding(.top, 2)
             if let credit = Labels.mainPhoto(plant)?.photo.credit, !credit.isEmpty {
-                Text(credit)
+                Text(Labels.creditText(credit))
                     .font(.body(10, .regular, relativeTo: .caption2))
                     .foregroundStyle(Theme.creditGrey)
                     .padding(.top, 2)
@@ -141,6 +145,8 @@ private final class SwipeClock {
 /// it.
 private struct SwipeToRemove<Row: View>: View {
     let id: String
+    /// The plant's name, for the spoken label of the Remove button.
+    let name: String
     @Binding var openId: String?
     /// Called each time a sideways swipe moves the row, and when it ends.
     let swiped: () -> Void
@@ -187,7 +193,7 @@ private struct SwipeToRemove<Row: View>: View {
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .accessibilityLabel("Remove")
+        .accessibilityLabel("Remove \(name)")
         .accessibilityIdentifier("remove-\(id)")
     }
 

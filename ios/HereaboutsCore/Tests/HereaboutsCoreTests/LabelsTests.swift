@@ -151,4 +151,14 @@ final class LabelsTests: XCTestCase {
         XCTAssertFalse(Labels.isMono("Sun"))
         XCTAssertFalse(Labels.isMono("Soil"))
     }
+
+    func testCreditTextKeepsTheLicenceNameTogether() {
+        let nb = "\u{00A0}"
+        let hy = "\u{2011}"
+        XCTAssertEqual(Labels.creditText("Jane Doe, CC BY-SA 4.0"), "Jane Doe, CC\(nb)BY\(hy)SA\(nb)4.0")
+        XCTAssertEqual(Labels.creditText("A, B, Public domain"), "A, B, Public\(nb)domain")
+        XCTAssertEqual(Labels.creditText("No licence here"), "No licence here")
+        XCTAssertEqual(Labels.creditText("Name, Some Place"), "Name, Some Place")
+        XCTAssertEqual(Labels.creditText(""), "")
+    }
 }

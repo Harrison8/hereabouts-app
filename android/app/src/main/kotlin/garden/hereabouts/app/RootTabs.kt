@@ -103,14 +103,16 @@ fun RootTabs(model: AppModel, isOnline: Boolean) {
         null -> {}
     }
 
+    // Garden sits on the pale surface (its cards stay white); the other tabs sit on white.
+    val ground = if (open == Tab.Garden && gardenPlant == null) Brand.surface else Brand.ground
     Scaffold(
-        containerColor = Brand.ground,
+        containerColor = ground,
         topBar = {
             if (open == Tab.Settings || (open == Tab.Garden && gardenPlant == null)) TopAppBar(
                 title = { Text(stringResource(open.heading), modifier = Modifier.testTag("title")) },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Brand.ground,
-                    scrolledContainerColor = Brand.ground,
+                    containerColor = ground,
+                    scrolledContainerColor = ground,
                     titleContentColor = Brand.ink,
                 ),
             )

@@ -99,8 +99,8 @@ fun PhotoPager(plant: Plant, photos: PhotoCache?) {
 }
 
 /**
- * The credit at left, the dots in the middle, the season and count at right. At the largest text sizes the count sits
- * above the credit, so neither is cut.
+ * The credit at left, the dots in the middle, the season and count at right. At the largest text sizes the dots, the count and
+ * the credit stack, so none is cut.
  */
 @Composable
 private fun Caption(shots: List<PhasePhoto>, shown: Int, modifier: Modifier) {
@@ -115,13 +115,14 @@ private fun Caption(shots: List<PhasePhoto>, shown: Int, modifier: Modifier) {
     }
     val credit = @Composable { m: Modifier ->
         Text(
-            shots[shown].photo.credit,
+            Labels.creditText(shots[shown].photo.credit),
             style = TextStyle(fontFamily = Figtree, fontSize = 12.sp, lineHeight = 16.sp, color = Brand.creditGrey),
             modifier = m,
         )
     }
     if (isLargeText()) {
         Column(modifier, verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Dots(shots.size, shown)
             counter(Modifier)
             credit(Modifier)
         }

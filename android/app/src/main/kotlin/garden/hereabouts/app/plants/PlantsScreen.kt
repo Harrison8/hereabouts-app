@@ -32,11 +32,11 @@ import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarState
 import androidx.compose.material3.rememberTopAppBarState
@@ -144,12 +144,14 @@ fun PlantsScreen(
         sendSearchEvent(model, choices, location)
     }
 
-    val scroll = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(barState)
+    val scroll = TopAppBarDefaults.enterAlwaysScrollBehavior(barState)
     Scaffold(
         modifier = modifier.nestedScroll(scroll.nestedScrollConnection),
         containerColor = Brand.ground,
         topBar = {
-            LargeTopAppBar(
+            // A small bar with the title, the way Garden has it. It slides off the top as the list scrolls and comes back
+            // when the list scrolls down, so on a small phone it does not hold the room of a plant row.
+            TopAppBar(
                 title = { Text(stringResource(R.string.tab_plants), modifier = Modifier.testTag("title")) },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = Brand.ground,
@@ -304,7 +306,8 @@ private fun SearchField(query: String, placeholder: String, onQuery: (String) ->
     Surface(
         shape = SearchBarDefaults.inputFieldShape,
         color = Brand.surface,
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+        // 4 dp above and below (DESIGN.md xs): the field is 56 dp tall, so it keeps its tap area.
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp),
     ) {
         SearchBarDefaults.InputField(
             query = query,
@@ -340,8 +343,9 @@ private fun TypeChips(
         countOf[c]?.let { c to it } ?: if (c in st.category) c to 0 else null
     }
     val iconSize = with(LocalDensity.current) { 18.sp.toDp() }
-    Box(Modifier.padding(top = 4.dp)) {
-        ChipRow(large) {
+    Box {
+        // One row that scrolls sideways at every text size, as on the iPhone; it never wraps into a column.
+        ChipRow(false) {
             BrandChip(
                 label = stringResource(R.string.filters),
                 count = if (panel == 0) null else panel,
@@ -383,13 +387,13 @@ private fun ListHead(count: Int, large: Boolean, sort: SortKey, onSort: (SortKey
         )
     }
     if (large) {
-        Column(Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, top = 8.dp)) {
+        Column(Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, top = 4.dp)) {
             words()
             SortMenu(sort, onSort)
         }
     } else {
         Row(
-            Modifier.fillMaxWidth().padding(start = 16.dp, end = 8.dp, top = 8.dp),
+            Modifier.fillMaxWidth().padding(start = 16.dp, end = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {

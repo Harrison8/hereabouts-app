@@ -39,8 +39,7 @@ final class PlantPageTests: XCTestCase {
     private func openPlant(_ app: XCUIApplication, search: String, id: String, name: String) {
         let field = app.searchFields.firstMatch
         XCTAssertTrue(field.waitForExistence(timeout: 10), "No search field")
-        field.tap()
-        field.typeText(search)
+        field.typeReliably(search)
         let row = app.descendants(matching: .any)["plant-\(id)"]
         XCTAssertTrue(row.waitForExistence(timeout: 10), "No row for \(name) after searching \"\(search)\"")
         row.tap()

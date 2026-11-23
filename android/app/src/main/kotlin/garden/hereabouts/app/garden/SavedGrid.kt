@@ -126,6 +126,7 @@ fun SavedGrid(
                     if (i > 0) Box(Modifier.fillMaxWidth().height(1.dp).background(Brand.rule))
                     SwipeToRemove(
                         id = plant.id,
+                        name = plant.common,
                         openId = openId,
                         setOpen = { openId = it },
                         remove = { remove(plant.id) },
@@ -172,7 +173,7 @@ private fun PlantRow(plant: Plant, photos: PhotoCache?, jobs: Int, large: Boolea
                 modifier = Modifier.padding(top = 2.dp),
             )
             val credit = Labels.mainPhoto(plant)?.photo?.credit
-            if (!credit.isNullOrEmpty()) Text(credit, style = CreditStyle, modifier = Modifier.padding(top = 2.dp))
+            if (!credit.isNullOrEmpty()) Text(Labels.creditText(credit), style = CreditStyle, modifier = Modifier.padding(top = 2.dp))
         }
     }
     Row(
@@ -246,6 +247,7 @@ private class SwipeMemory {
 @Composable
 private fun SwipeToRemove(
     id: String,
+    name: String,
     openId: String?,
     setOpen: (String?) -> Unit,
     remove: () -> Unit,
@@ -333,7 +335,7 @@ private fun SwipeToRemove(
         }
     }
 
-    val removeSpoken = stringResource(R.string.remove)
+    val removeSpoken = stringResource(R.string.remove_plant, name)
     Box(Modifier.fillMaxWidth().onSizeChanged { width = it.width }.then(swipe)) {
         if (offset < 0f) {
             Box(Modifier.matchParentSize(), contentAlignment = Alignment.CenterEnd) {

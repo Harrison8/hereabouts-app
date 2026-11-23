@@ -184,7 +184,8 @@ jobs:
           retention-days: 14
 
   # The lowest iOS the app supports. No build machine has an iOS 17 simulator, so this job downloads iOS 17.5 (several
-  # GB) and runs the unit tests and the Garden screen tests on it. It runs only when started by hand, never on a push.
+  # GB) and runs the unit tests and the whole screen test suite on it, with a screenshot of each screen. It runs only
+  # when started by hand, never on a push.
   ios17:
     if: ${{ github.event_name == 'workflow_dispatch' }}
     runs-on: macos-26
@@ -199,6 +200,7 @@ jobs:
           {
             echo "DERIVED=$RUNNER_TEMP/derived"
             echo "RESULTS=$RUNNER_TEMP/results"
+            echo "SHOTS=$RUNNER_TEMP/screenshots"
           } >> "$GITHUB_ENV"
 
       - name: Install XcodeGen
@@ -212,7 +214,16 @@ jobs:
         run: |
           set -euo pipefail
           xcodebuild -version
-          xcodebuild -downloadPlatform iOS -buildVersion 17.5
+          # "Unable to connect to simulator" means the simulator service had not started yet. Wake it, then try up to 3 times.
+          xcrun simctl list runtimes > /dev/null || true
+          ok=0
+          for attempt in 1 2 3; do
+            if xcodebuild -downloadPlatform iOS -buildVersion 17.5; then ok=1; break; fi
+            echo "Download attempt $attempt failed"
+            sleep 30
+            xcrun simctl list runtimes > /dev/null || true
+          done
+          [ "$ok" = 1 ]
           xcrun simctl list runtimes
 
       - name: Build the app and its tests
@@ -225,7 +236,7 @@ jobs:
             -derivedDataPath "$DERIVED" \
             CODE_SIGNING_ALLOWED=NO
 
-      - name: Unit tests and Garden screen tests on iOS 17.5
+      - name: Unit tests and screen tests on iOS 17.5
         working-directory: ios
         run: |
           set -euo pipefail
@@ -246,6 +257,35 @@ jobs:
             -project Hereabouts.xcodeproj -scheme Hereabouts \
             -destination "platform=iOS Simulator,id=$udid,arch=arm64" \
             -derivedDataPath "$DERIVED" \
-            -resultBundlePath "$RESULTS/ios17.xcresult" \
-            -only-testing:HereaboutsTests \
-            -only-testing:HereaboutsUITests/GardenTests
+            -resultBundlePath "$RESULTS/ios17.xcresult"
+
+      # Every screenshot and audit note the screen tests attached, named by run and screen.
+      - name: Take the screenshots out of the results
+        if: always()
+        run: |
+          set -uo pipefail
+          mkdir -p "$SHOTS"
+          for r in "$RESULTS"/*.xcresult; do
+            [ -e "$r" ] || continue
+            run=$(basename "$r" .xcresult)
+            out="$SHOTS/$run"
+            mkdir -p "$out"
+            xcrun xcresulttool export attachments --path "$r" --output-path "$out" || continue
+            if [ -f "$out/manifest.json" ]; then
+              jq -r '.[] | .attachments[]? | [.exportedFileName, .suggestedHumanReadableName] | @tsv' "$out/manifest.json" |
+                while IFS=$'	' read -r file nice; do
+                  nice=$(printf '%s' "$nice" | tr '":<>|*?' '_______')
+                  [ -n "$file" ] && [ -n "$nice" ] && [ -f "$out/$file" ] && mv "$out/$file" "$out/$run-$nice"
+                done
+            fi
+          done
+          find "$SHOTS" -type f | sort
+
+      - name: Save the screenshots
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: iphone-ios17-screenshots
+          path: ${{ runner.temp }}/screenshots
+          if-no-files-found: warn
+          retention-days: 14

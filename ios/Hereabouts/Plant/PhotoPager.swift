@@ -57,7 +57,7 @@ struct PhotoPager: View {
             .font(.body(15, .regular, relativeTo: .subheadline))
             .foregroundStyle(Theme.inkSoft)
             .accessibilityIdentifier("photoCounter")
-        let credit = Text(shots[shown].photo.credit)
+        let credit = Text(Labels.creditText(shots[shown].photo.credit))
             .font(.body(12, .regular, relativeTo: .caption))
             .foregroundStyle(Theme.creditGrey)
         if typeSize.isAccessibilitySize {

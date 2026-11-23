@@ -1,5 +1,5 @@
 // The brand's chip, used for the plant types on the Plants tab and every choice in the filters panel: Material's
-// filter chip with the brand's 4 dp corners, a hairline border, and a pale moss fill with moss words when chosen. An
+// filter chip with the brand's 4 dp corners, a hairline border, and the brand's moss fill with white words when chosen (DESIGN.md's active chip). An
 // optional count follows the name in the softer colour. The chip is drawn 32 dp high but answers taps over 48 dp.
 package garden.hereabouts.app.plants
 
@@ -12,6 +12,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -48,7 +49,7 @@ fun BrandChip(
             Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
                 Text(label, style = style)
                 if (count != null) {
-                    Text("$count", style = style.copy(color = if (selected) Brand.moss else Brand.inkSoft, fontWeight = FontWeight.Normal))
+                    Text("$count", style = style.copy(color = if (selected) Color.White else Brand.inkSoft, fontWeight = FontWeight.Normal))
                 }
             }
         },
@@ -58,9 +59,9 @@ fun BrandChip(
             containerColor = Brand.ground,
             labelColor = Brand.ink,
             iconColor = Brand.ink,
-            selectedContainerColor = Brand.mossSoft,
-            selectedLabelColor = Brand.moss,
-            selectedLeadingIconColor = Brand.moss,
+            selectedContainerColor = Brand.moss,
+            selectedLabelColor = Color.White,
+            selectedLeadingIconColor = Color.White,
             disabledLabelColor = Brand.ruleStrong,
         ),
         border = FilterChipDefaults.filterChipBorder(

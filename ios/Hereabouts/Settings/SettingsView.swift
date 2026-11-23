@@ -213,7 +213,7 @@ private struct PhotoCreditsView: View {
                     .font(.display(.headline))
                     .foregroundStyle(Theme.ink)
                 ForEach(row.credits, id: \.self) { credit in
-                    Text(credit)
+                    Text(Labels.creditText(credit))
                         .font(.body(.subheadline))
                         .foregroundStyle(Theme.inkSoft)
                 }

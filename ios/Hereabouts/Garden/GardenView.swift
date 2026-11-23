@@ -36,7 +36,7 @@ struct GardenView: View {
                 }
                 .padding(.bottom, 24)
             }
-            .background(Color.white)
+            .background(Theme.surface)
             .navigationTitle("My garden")
             .navigationDestination(for: String.self) { id in
                 if let plant = model.data.plants.first(where: { $0.id == id }) {

@@ -567,7 +567,7 @@ class GardenTest {
 
             dragLeft("saved-lindera-benzoin", amount = 120.dp)
             assertTrue("Swiping left showed no Remove button", waitFor(5_000) { exists("remove-lindera-benzoin") })
-            assertEquals("Remove", label("remove-lindera-benzoin"))
+            assertEquals("Remove Spicebush", label("remove-lindera-benzoin"))
             val (width, height) = sizeDp("remove-lindera-benzoin")
             assertTrue("The Remove button is narrower than 48 dp ($width)", width >= 47.5f)
             assertTrue("The Remove button is less than 48 dp tall ($height)", height >= 47.5f)

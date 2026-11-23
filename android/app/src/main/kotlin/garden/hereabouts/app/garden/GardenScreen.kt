@@ -105,7 +105,7 @@ fun GardenScreen(
     val ticked = ticks[TicksStore.weekId(today)].orEmpty()
     val willCome = AppModel.willCome(remindersOn, permission)
 
-    Column(Modifier.fillMaxSize().background(Brand.ground).verticalScroll(scroll).padding(bottom = 24.dp)) {
+    Column(Modifier.fillMaxSize().background(Brand.surface).verticalScroll(scroll).padding(bottom = 24.dp)) {
         location?.let { CountyRow(it) } ?: Spacer(Modifier.height(4.dp))
         if (week.savedPlants.isEmpty()) {
             EmptyState(willCome, permission == NotificationPermission.NotAsked, onBrowsePlants)

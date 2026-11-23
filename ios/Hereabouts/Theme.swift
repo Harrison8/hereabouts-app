@@ -11,6 +11,9 @@ enum Theme {
     /// Text: the near-black ink, the softer ink for secondary lines, and the thin rule around groups.
     static let ink = Color(hex: 0x16211A)
     static let inkSoft = Color(hex: 0x52605A)
+    /// The words of a control that is waiting, such as the first-open button before a county is found.
+    static let inkFaintHex: UInt32 = 0x67726B
+    static let inkFaint = Color(hex: inkFaintHex)
     static let rule = Color(hex: 0xE1E6DB)
     /// The darker rule round chips and photo frames, and the grey of photo credits.
     static let ruleStrong = Color(hex: 0xB4BEAD)

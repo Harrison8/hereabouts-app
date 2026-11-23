@@ -326,13 +326,13 @@ final class GardenTests: XCTestCase {
         let count = element(app, "savedCount")
         XCTAssertTrue(count.exists, "The saved plants have no count")
         XCTAssertEqual(count.label, "2 plants")
-        XCTAssertFalse(app.buttons["Remove"].exists, "A Remove button shows before any swipe")
+        XCTAssertFalse(app.buttons["remove-lindera-benzoin"].exists, "A Remove button shows before any swipe")
         reveal(app, row)
 
         dragLeft(row, by: 120)
         let remove = app.buttons["remove-lindera-benzoin"]
         XCTAssertTrue(remove.waitForExistence(timeout: 5), "Swiping left showed no Remove button")
-        XCTAssertEqual(remove.label, "Remove")
+        XCTAssertEqual(remove.label, "Remove Spicebush")
         XCTAssertTrue(remove.isHittable, "The Remove button is covered")
         XCTAssertGreaterThanOrEqual(remove.frame.width, 44, "The Remove button is narrower than 44 points")
         XCTAssertTrue(app.navigationBars["My garden"].exists, "Swiping opened the plant's page")
@@ -390,8 +390,7 @@ final class GardenTests: XCTestCase {
         change.tap()
         let field = app.textFields["zipField"]
         XCTAssertTrue(field.waitForExistence(timeout: 10), "Change did not open the location screen")
-        field.tap()
-        field.typeText("97201")
+        field.typeReliably("97201")
         XCTAssertTrue(app.staticTexts["Multnomah County, Oregon"].waitForExistence(timeout: 10))
         app.buttons["continue"].tap()
         XCTAssertTrue(app.staticTexts["Multnomah County, Oregon"].waitForExistence(timeout: 10), "The county did not change")
