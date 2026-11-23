@@ -30,6 +30,7 @@ import garden.hereabouts.app.services.phoneAllowsUnderTest
 import garden.hereabouts.core.Plant
 import garden.hereabouts.core.Reminder
 import garden.hereabouts.core.Reminders
+import java.io.IOException
 import java.time.ZonedDateTime
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
@@ -126,7 +127,11 @@ class ReminderScheduler(context: Context) {
         if (Build.VERSION.SDK_INT < 33) return null
         // Under test the answer comes from the test instead of the phone's question, so nothing covers the screen.
         val granted = askedUnderTest() ?: NotificationAsk.ask() ?: return null
-        context.keptStore.edit { it[askedKey] = true }
+        try {
+            context.keptStore.edit { it[askedKey] = true }
+        } catch (e: IOException) {
+            // A full phone simply does not save the record.
+        }
         return granted
     }
 

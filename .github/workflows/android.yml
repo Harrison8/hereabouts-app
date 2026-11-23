@@ -1,7 +1,9 @@
 # The Android app: it is built and linted, then its tests run on two emulators, the newest Android (API 36) and the
 # oldest the app supports (API 26), with a screenshot of each tab saved for review. The bundle is already in this
-# project: every snapshot carries it. Nothing is signed here: Debug builds need no signing.
+# project: every snapshot carries it. Debug builds need no signing.
 # Runs on every snapshot pushed here (main and pr/<number>) and by hand. Never on outside contributions.
+# Two jobs run only by hand: release signs the Release bundle and APK with the upload key, and release-offline installs
+# that APK on an emulator with the network off. The key is a secret, so those jobs never run on a push.
 name: Android app
 
 on:
@@ -136,4 +138,136 @@ jobs:
         with:
           name: android-test-results-api-${{ matrix.api }}
           path: android/app/build/reports/androidTests/
+          if-no-files-found: warn
+
+  # By hand only: the one job that can read the upload key. A push never runs it, and nothing from an outside pull
+  # request can reach the upload key.
+  release:
+    # Hand runs on main or pr/<n> only: the mirror writes pr/<n> for same-repo pull requests only, so outside code never gets the key.
+    if: github.event_name == 'workflow_dispatch' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/pr/'))
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: gradle/actions/wrapper-validation@8da46b539cd8fe6ab27ca75128919a18d757604c # v6
+      - uses: actions/setup-java@d1374f8ac74474200d16ef8ecee22c7ae7a51880 # v6
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: gradle
+          cache-dependency-path: |
+            android/*.kts
+            android/*/*.kts
+            android/gradle/libs.versions.toml
+            android/gradle/wrapper/gradle-wrapper.properties
+
+      # The key store is decoded into the runner's temporary folder, never into the project, and deleted in the last step.
+      - name: Put the upload key store in the runner's temporary folder
+        env:
+          ANDROID_UPLOAD_KEY: ${{ secrets.ANDROID_UPLOAD_KEY }}
+        run: printf '%s' "$ANDROID_UPLOAD_KEY" | base64 -d > "$RUNNER_TEMP/upload.p12"
+
+      # Says only whether the key store opens with the password. Nothing printed is secret: the tools' own messages
+      # and the public certificate fingerprint.
+      - name: Check the key store opens
+        env:
+          STORE_PASSWORD: ${{ secrets.ANDROID_UPLOAD_KEY_PASSWORD }}
+        run: |
+          # Only the ends are trimmed, as Gradle's .trim() does when it reads the password.
+          trimmed="$STORE_PASSWORD"
+          trimmed="${trimmed#"${trimmed%%[![:space:]]*}"}"
+          trimmed="${trimmed%"${trimmed##*[![:space:]]}"}"
+          export STORE_PASSWORD="$trimmed"
+          echo "A stored password is present: $([ -n "$STORE_PASSWORD" ] && echo yes || echo no)"
+          openssl pkcs12 -info -noout -in "$RUNNER_TEMP/upload.p12" -passin env:STORE_PASSWORD 2>&1 | grep -E 'MAC|PBMAC|Iteration|Error|error' || true
+          if ! keytool -list -keystore "$RUNNER_TEMP/upload.p12" -storetype pkcs12 -storepass:env STORE_PASSWORD > "$RUNNER_TEMP/keytool.txt" 2>&1; then
+            grep -E 'rror|ncorrect|tampered' "$RUNNER_TEMP/keytool.txt" || true
+            echo "The key store did not open."
+            rm -f "$RUNNER_TEMP/keytool.txt"
+            exit 1
+          fi
+          grep -E 'Keystore type|upload|fingerprint' "$RUNNER_TEMP/keytool.txt"
+          rm -f "$RUNNER_TEMP/keytool.txt"
+
+      - name: Build the signed Release bundle and APK (shrunk, the version code is the run number)
+        working-directory: android
+        env:
+          HEREABOUTS_UPLOAD_STORE: ${{ runner.temp }}/upload.p12
+          HEREABOUTS_UPLOAD_STORE_PASSWORD: ${{ secrets.ANDROID_UPLOAD_KEY_PASSWORD }}
+          HEREABOUTS_UPLOAD_KEY_ALIAS: upload
+          HEREABOUTS_UPLOAD_KEY_PASSWORD: ${{ secrets.ANDROID_UPLOAD_KEY_PASSWORD }}
+          HEREABOUTS_VERSION_CODE: ${{ github.run_number }}
+        run: ./gradlew :app:bundleRelease :app:assembleRelease --no-daemon
+
+      # Prints the certificate subject and SHA-256, which are public, to show the APK is signed with the upload key.
+      - name: Check the APK signature
+        run: |
+          set -euo pipefail
+          apksigner=$(ls "$ANDROID_HOME"/build-tools/*/apksigner | sort -V | tail -n 1)
+          apk=android/app/build/outputs/apk/release/app-release.apk
+          ls -l "$apk" android/app/build/outputs/bundle/release/app-release.aab
+          # Written to a file first, so a closed pipe cannot fail the step.
+          if ! "$apksigner" verify --verbose --print-certs "$apk" > "$RUNNER_TEMP/apksigner.txt" 2>&1; then
+            cat "$RUNNER_TEMP/apksigner.txt"
+            exit 1
+          fi
+          cat "$RUNNER_TEMP/apksigner.txt"
+          rm -f "$RUNNER_TEMP/apksigner.txt"
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: android-release-build
+          path: |
+            android/app/build/outputs/apk/release/app-release.apk
+            android/app/build/outputs/bundle/release/app-release.aab
+          if-no-files-found: error
+
+      - name: Delete the upload key store
+        if: always()
+        run: rm -f "$RUNNER_TEMP/upload.p12"
+
+  # By hand only: the signed, shrunk APK on the newest Android with the network off. Pictures of the plant list, a
+  # plant page, the sellers and the Garden tab are saved for review.
+  release-offline:
+    if: github.event_name == 'workflow_dispatch'
+    needs: release
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
+        with:
+          name: android-release-build
+          path: ${{ runner.temp }}/release
+      - name: Free disk space (the emulator needs about 7 GB for its data partition)
+        run: |
+          sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/share/boost /opt/hostedtoolcache/CodeQL
+          df -h /
+      - name: Let the emulator use hardware acceleration
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      # The script saves its pictures even when a check fails, and its exit code fails the step.
+      - name: Install the signed APK, turn the network off and take pictures
+        uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2
+        with:
+          api-level: 36
+          target: google_apis
+          arch: x86_64
+          disk-size: 4096M
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -no-metrics
+          disable-animations: true
+          script: python3 android/ci/offline-check.py "$RUNNER_TEMP/release/apk/release/app-release.apk" "$RUNNER_TEMP/pictures"
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        if: always()
+        with:
+          name: android-release-pictures
+          path: ${{ runner.temp }}/pictures/
           if-no-files-found: warn

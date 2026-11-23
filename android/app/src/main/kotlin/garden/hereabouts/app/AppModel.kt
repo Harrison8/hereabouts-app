@@ -117,7 +117,13 @@ class AppModel(
      * when the write was asked for. So after two quick changes the later one is kept, whichever write runs last.
      */
     private fun write(change: (MutablePreferences) -> Unit): Job =
-        writes.launch { store.edit { change(it) } }
+        writes.launch {
+            try {
+                store.edit { change(it) }
+            } catch (e: IOException) {
+                // A full phone simply does not save.
+            }
+        }
 
     // Data
 

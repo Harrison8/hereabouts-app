@@ -372,7 +372,7 @@ final class GardenTests: XCTestCase {
         XCTAssertTrue(StubServer.wait(5) { count.label == "2 plants" }, "The count reads \(count.label) after swiping the photos")
         XCTAssertTrue(element(app, "saved-lindera-benzoin").exists, "Swiping the photos unsaved Spicebush")
         XCTAssertTrue(element(app, "saved-asclepias-tuberosa").exists, "Swiping the photos unsaved Butterfly Weed")
-        XCTAssertFalse(app.buttons["Remove"].exists, "A Remove button shows after swiping the photos")
+        XCTAssertFalse(app.buttons["remove-lindera-benzoin"].exists, "A Remove button shows after swiping the photos")
     }
 
     /// A saved plant that is not native to a newly chosen county stays saved and stays listed: purple coneflower grows

@@ -213,6 +213,25 @@ class ServicesPartsTest {
         assertTrue(server.received.size > asked)
     }
 
+    /** A store that cannot be written to, as on a phone with no free space. */
+    private class FullStore(private val real: DataStore<Preferences>) : DataStore<Preferences> {
+        override val data = real.data
+        override suspend fun updateData(transform: suspend (t: Preferences) -> Preferences): Preferences =
+            throw IOException("No space left on device")
+    }
+
+    @Test
+    fun aFullPhoneDoesNotCrashTheCheckOrTheAnalyticsId() {
+        StubData.good.serve(server)
+        val real = freshStore("full")
+        val model = shippedModel(real)
+        val full = FullStore(real)
+        val updater = DataUpdater(model, server.baseUrl, File(folder, "data"), full, isOnline = { true })
+        runBlocking { updater.checkIfDue() }
+        assertEquals(listOf("test-plant-one", "test-plant-two"), model.data.value.plants.map { it.id })
+        assertTrue(runBlocking { EventSender.distinctId(full) }.isNotEmpty())
+    }
+
     @Test
     fun aDataSetThatDoesNotReadKeepsTheOldData() {
         StubData.unreadable.serve(server)

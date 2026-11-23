@@ -287,13 +287,16 @@ object Labels {
     /**
      * creditText: a photo credit with its licence name held together. The last ", " part is the
      * licence when it starts with CC, Public, PD or GFDL; its spaces become no-break spaces and its
-     * hyphens become no-break hyphens, so a line never breaks inside "CC BY-SA 4.0".
+     * hyphens become no-break hyphens, so a line never breaks inside "CC BY-SA 4.0". Only the name before
+     * a source in brackets is held, so the space before "(" can break: "Public Domain (NPS)".
      */
     fun creditText(credit: String): String {
         val cut = credit.lastIndexOf(", ")
         if (cut < 0) return credit
         val licence = credit.substring(cut + 2)
         if (!(licence.startsWith("CC") || licence.startsWith("Public") || licence.startsWith("PD") || licence.startsWith("GFDL"))) return credit
-        return credit.substring(0, cut + 2) + licence.replace(' ', '\u00A0').replace('-', '\u2011')
+        val bracket = licence.indexOf(" (")
+        val name = if (bracket < 0) licence else licence.substring(0, bracket)
+        return credit.substring(0, cut + 2) + name.replace(' ', '\u00A0').replace('-', '\u2011') + licence.substring(name.length)
     }
 }

@@ -18,7 +18,8 @@ android {
         // Android 8.0, the first with java.time and variable fonts.
         minSdk = 26
         targetSdk = 36
-        versionCode = 1
+        // The hand-run signed build sets the number to its run number, so each upload is higher than the last.
+        versionCode = System.getenv("HEREABOUTS_VERSION_CODE")?.toIntOrNull() ?: 1
         versionName = "1.0"
         testInstrumentationRunner = "garden.hereabouts.app.HereaboutsTestRunner"
     }
@@ -27,6 +28,36 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
+    }
+
+    // The upload key comes from four environment variables, set only by the hand-run signed build. Without them (every
+    // Debug build and every test run) the Release build is simply left unsigned.
+    val uploadStore = System.getenv("HEREABOUTS_UPLOAD_STORE")
+    val uploadStorePassword = System.getenv("HEREABOUTS_UPLOAD_STORE_PASSWORD")
+    val uploadKeyAlias = System.getenv("HEREABOUTS_UPLOAD_KEY_ALIAS")
+    val uploadKeyPassword = System.getenv("HEREABOUTS_UPLOAD_KEY_PASSWORD")
+    val canSignRelease = !uploadStore.isNullOrEmpty() && !uploadStorePassword.isNullOrEmpty() &&
+        !uploadKeyAlias.isNullOrEmpty() && !uploadKeyPassword.isNullOrEmpty()
+
+    signingConfigs {
+        if (canSignRelease) {
+            create("release") {
+                storeFile = file(uploadStore!!)
+                storeType = "pkcs12"
+                storePassword = System.getenv("HEREABOUTS_UPLOAD_STORE_PASSWORD").trim()
+                keyAlias = System.getenv("HEREABOUTS_UPLOAD_KEY_ALIAS").trim()
+                keyPassword = System.getenv("HEREABOUTS_UPLOAD_KEY_PASSWORD").trim()
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            if (canSignRelease) signingConfig = signingConfigs.getByName("release")
+        }
     }
 
     buildFeatures {

@@ -191,5 +191,8 @@ class LabelsTest {
         assertEquals("No licence here", Labels.creditText("No licence here"))
         assertEquals("Name, Some Place", Labels.creditText("Name, Some Place"))
         assertEquals("", Labels.creditText(""))
+        // A source in brackets stays breakable: only the licence name is held.
+        assertEquals("NPS, Public${nb}Domain (NPS)", Labels.creditText("NPS, Public Domain (NPS)"))
+        assertEquals("Jane Doe, CC${nb}BY (iNaturalist)", Labels.creditText("Jane Doe, CC BY (iNaturalist)"))
     }
 }

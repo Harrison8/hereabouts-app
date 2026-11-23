@@ -89,7 +89,11 @@ class DataUpdater(
     }
 
     private suspend fun finished() {
-        store.edit { it[lastCheckKey] = now().toEpochMilli() }
+        try {
+            store.edit { it[lastCheckKey] = now().toEpochMilli() }
+        } catch (e: IOException) {
+            // A full phone simply does not save; the check runs again next launch.
+        }
     }
 
     companion object {

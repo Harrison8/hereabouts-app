@@ -160,5 +160,8 @@ final class LabelsTests: XCTestCase {
         XCTAssertEqual(Labels.creditText("No licence here"), "No licence here")
         XCTAssertEqual(Labels.creditText("Name, Some Place"), "Name, Some Place")
         XCTAssertEqual(Labels.creditText(""), "")
+        // A source in brackets stays breakable: only the licence name is held.
+        XCTAssertEqual(Labels.creditText("NPS, Public Domain (NPS)"), "NPS, Public\(nb)Domain (NPS)")
+        XCTAssertEqual(Labels.creditText("Jane Doe, CC BY (iNaturalist)"), "Jane Doe, CC\(nb)BY (iNaturalist)")
     }
 }

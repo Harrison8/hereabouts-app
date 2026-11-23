@@ -3,7 +3,8 @@
 // on the device as <size>-<screen>.png, where the workflow collects them.
 //
 // Nothing here fails the run for what the screens look like. A step that cannot be done is written down and the test
-// goes on, so one missing control does not cost the pictures after it. Each test saves its notes as
+// goes on, so one missing control does not cost the pictures after it. When the test ends, the pictures and notes are
+// saved and a note saying STEP FAILED fails the test. Each test saves its notes as
 // report-<test>.b64 next to the pictures (base64, so any characters survive the device's shell); the workflow turns
 // them back into text. The Compose accessibility checks need Android 14 (API 34) or later; on older phones the notes say
 // they were not run.
@@ -55,6 +56,7 @@ import garden.hereabouts.core.LocationLookup
 import garden.hereabouts.core.LocationResult
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertTrue
+import org.junit.Assert.fail
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
@@ -116,6 +118,9 @@ class ScreenCheckTest {
             waitFor(10_000) { fontScale() < 1.1f }
         }
         clearFiles()
+        // Last, so the pictures and notes are saved and the next test starts clean.
+        val failed = notes.filter { "STEP FAILED" in it }
+        if (failed.isNotEmpty()) fail("A step of the screen check failed:\n" + failed.joinToString("\n"))
     }
 
     private fun clearFiles() {

@@ -66,6 +66,8 @@ actor EventSender {
     /// or refused as malformed, leave the queue; on no answer or a server error they wait for the next try.
     func flush() async {
         guard let endpoint, !posting else { return }
+        // Without the website's key PostHog would refuse every event, so they wait for a build that has it.
+        if apiKey.isEmpty { return }
         posting = true
         defer { posting = false }
         while !queue.isEmpty, await isOnline() {

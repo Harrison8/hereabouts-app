@@ -191,9 +191,13 @@ class EventSender(
         suspend fun distinctId(store: DataStore<Preferences>): String {
             store.data.first()[distinctIdKey]?.takeIf { it.isNotEmpty() }?.let { return it }
             var id = UUID.randomUUID().toString()
-            store.edit { kept ->
-                val existing = kept[distinctIdKey]
-                if (existing.isNullOrEmpty()) kept[distinctIdKey] = id else id = existing
+            try {
+                store.edit { kept ->
+                    val existing = kept[distinctIdKey]
+                    if (existing.isNullOrEmpty()) kept[distinctIdKey] = id else id = existing
+                }
+            } catch (e: IOException) {
+                // A full phone simply does not save the id; a new one is made next time.
             }
             return id
         }

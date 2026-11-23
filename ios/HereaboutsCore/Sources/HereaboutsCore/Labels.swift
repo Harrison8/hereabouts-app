@@ -319,12 +319,15 @@ public enum Labels {
 
     /// creditText: a photo credit with its licence name held together. The last ", " part is the
     /// licence when it starts with CC, Public, PD or GFDL; its spaces become no-break spaces and its
-    /// hyphens become no-break hyphens, so a line never breaks inside "CC BY-SA 4.0".
+    /// hyphens become no-break hyphens, so a line never breaks inside "CC BY-SA 4.0". Only the name before
+    /// a source in brackets is held, so the space before "(" can break: "Public Domain (NPS)".
     public static func creditText(_ credit: String) -> String {
         guard let cut = credit.range(of: ", ", options: .backwards) else { return credit }
         let licence = String(credit[cut.upperBound...])
         guard ["CC", "Public", "PD", "GFDL"].contains(where: { licence.hasPrefix($0) }) else { return credit }
+        let name = licence.range(of: " (").map { String(licence[..<$0.lowerBound]) } ?? licence
         return String(credit[..<cut.upperBound])
-            + licence.replacingOccurrences(of: " ", with: "\u{00A0}").replacingOccurrences(of: "-", with: "\u{2011}")
+            + name.replacingOccurrences(of: " ", with: "\u{00A0}").replacingOccurrences(of: "-", with: "\u{2011}")
+            + String(licence.dropFirst(name.count))
     }
 }
