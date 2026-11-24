@@ -523,7 +523,7 @@ class PlantsTest {
         launch(location(listCase("51059", "suggested")), offline = true).use {
             assertTrue("No banner with no signal", waitFor(10_000) { exists(hasTestTag("offlineBanner")) })
             assertEquals(
-                "No signal. Every plant and photo still works. Seller links open once you have signal again.",
+                "No signal. Seller links open once you have signal again.",
                 text("offlineBanner"),
             )
             val icon = node("no-signal-icon", unmerged = true)

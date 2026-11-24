@@ -277,7 +277,7 @@ class PlantPageTest {
             compose.onNodeWithTag("seasonChart").performScrollTo()
             assertTrue(
                 "The season chart reads: ${label("seasonChart")}",
-                label("seasonChart").startsWith("Through the year. In leaf: March to October; Bloom: March to April"),
+                label("seasonChart").startsWith("In leaf: March to October; Bloom: March to April"),
             )
             compose.onNodeWithTag("fact-Flowers").performScrollTo()
             assertTrue("Flowers reads: ${words(node("fact-Flowers"))}", words(node("fact-Flowers")).contains("Mar to Apr"))

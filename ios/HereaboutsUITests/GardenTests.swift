@@ -153,9 +153,6 @@ final class GardenTests: XCTestCase {
         XCTAssertTrue(browse.exists, "The empty state has no Browse plants button")
         XCTAssertEqual(browse.label, "Browse plants")
         XCTAssertGreaterThanOrEqual(browse.frame.height, 44, "Browse plants is less than 44 points tall")
-        // The phone has not asked about notifications yet, so the note says it will.
-        XCTAssertTrue(app.staticTexts["The phone asks if Hereabouts may send reminders when you save your first plant."]
-            .waitForExistence(timeout: 5), "The empty state does not say the phone will ask")
         // Not asked yet and the switch is on, so the empty state says when the reminder comes.
         let note = element(app, "gardenEmptyNote")
         XCTAssertTrue(StubServer.wait(5) { note.exists && note.label.contains("Each Saturday at 8:00") },
@@ -462,8 +459,6 @@ final class GardenTests: XCTestCase {
         XCTAssertTrue(note.waitForExistence(timeout: 10), "Remove did not unsave the plant")
         XCTAssertTrue(StubServer.wait(5) { note.label == "Tap the save button on any plant to save it here." },
                       "With notifications refused the empty state reads: \(note.label)")
-        XCTAssertFalse(app.staticTexts["The phone asks if Hereabouts may send reminders when you save your first plant."].exists,
-                       "The empty state says the phone will ask, after it already did")
         attachScreenshot(app, "Garden, nothing saved, notifications refused")
     }
 

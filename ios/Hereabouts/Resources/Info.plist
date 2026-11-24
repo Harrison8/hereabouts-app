@@ -28,7 +28,7 @@
 		<true/>
 	</dict>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>Hereabouts finds your county from your location on this phone and never sends your location anywhere.</string>
+	<string>Hereabouts finds your county from your location on this phone. The location itself never leaves the phone.</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>UIAppFonts</key>

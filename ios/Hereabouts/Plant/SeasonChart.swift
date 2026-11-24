@@ -17,7 +17,7 @@ struct SeasonChart: View {
     static let monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September",
                              "October", "November", "December"]
 
-    /// The website's spoken label: "Through the year. In leaf: March to October; Bloom: March to April".
+    /// The website's spoken label: "In leaf: March to October; Bloom: March to April". The heading above says "Through the year".
     static func spoken(_ rows: [SeasonRow]) -> String {
         let said = rows.map { row in
             let runs = row.runs.compactMap { run -> String? in
@@ -27,7 +27,7 @@ struct SeasonChart: View {
             }
             return "\(row.label): \(runs.joined(separator: " and "))"
         }
-        return "Through the year. \(said.joined(separator: "; "))"
+        return said.joined(separator: "; ")
     }
 
     var body: some View {

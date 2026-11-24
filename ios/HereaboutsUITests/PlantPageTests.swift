@@ -153,7 +153,7 @@ final class PlantPageTests: XCTestCase {
         let chart = app.descendants(matching: .any)["seasonChart"]
         for _ in 0..<4 where !chart.isHittable { app.swipeUp() }
         XCTAssertTrue(chart.exists, "The plant page has no season chart")
-        XCTAssertTrue(chart.label.hasPrefix("Through the year. In leaf: March to October; Bloom: March to April"),
+        XCTAssertTrue(chart.label.hasPrefix("In leaf: March to October; Bloom: March to April"),
                       "The chart says \(chart.label)")
         // Every range under the chart reads with "to", as plant-page-scrolled.png writes them.
         let flowers = app.descendants(matching: .any)["fact-Flowers"]

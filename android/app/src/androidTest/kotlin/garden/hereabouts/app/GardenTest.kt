@@ -354,13 +354,6 @@ class GardenTest {
             assertEquals("Browse plants", words(node("browsePlants")))
             val (_, height) = sizeDp("browsePlants")
             assertTrue("Browse plants is less than 48 dp tall ($height)", height >= 47.5f)
-            // On Android 13 and later the phone has not asked about notifications yet, so the note says it will.
-            // Before Android 13 there is no question to come.
-            assertEquals(
-                "The note that the phone will ask",
-                phoneAsks,
-                exists(hasText("The phone asks if Hereabouts may send reminders when you save your first plant.")),
-            )
             // Not asked yet, or allowed without a question, and the switch is on, so the empty state says when the reminder comes.
             assertTrue(
                 "The empty state does not say when the reminder comes: ${label("gardenEmptyNote")}",
@@ -806,10 +799,6 @@ class GardenTest {
             assertTrue(
                 "With notifications refused the empty state reads: ${label("gardenEmptyNote")}",
                 waitFor(5_000) { label("gardenEmptyNote") == "Tap the save button on any plant to save it here." },
-            )
-            assertFalse(
-                "The empty state says the phone will ask, after it already did",
-                exists(hasText("The phone asks if Hereabouts may send reminders when you save your first plant.")),
             )
             screenshot("garden-empty-notifications-refused")
 

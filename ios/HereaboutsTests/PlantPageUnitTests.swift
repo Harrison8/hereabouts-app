@@ -90,7 +90,7 @@ final class PlantPageUnitTests: XCTestCase {
                        "Shrub \u{00B7} Native to Fairfax County, Virginia")
         XCTAssertEqual(PlantPage.meta(spicebush, location: nil, geo: model.data.geo), "Shrub")
         XCTAssertTrue(SeasonChart.spoken(Labels.seasonRows(spicebush))
-            .hasPrefix("Through the year. In leaf: March to October; Bloom: March to April"))
+            .hasPrefix("In leaf: March to October; Bloom: March to April"))
 
         let view = Sellers.buyView(spicebush, fairfax, channel: .app, data: model.data)
         XCTAssertEqual(WhereToBuySheet.summary(plant: spicebush, view: view, location: fairfax),

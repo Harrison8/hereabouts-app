@@ -57,7 +57,7 @@ private val monthNames = listOf(
  */
 private const val LARGEST_SCALE = 1.3f
 
-/** The website's spoken label: "Through the year. In leaf: March to October; Bloom: March to April". */
+/** The website's spoken label: "In leaf: March to October; Bloom: March to April". The heading above says "Through the year". */
 internal fun spokenSeasons(rows: List<SeasonRow>): String {
     val said = rows.map { row ->
         val runs = row.runs.mapNotNull { run ->
@@ -68,7 +68,7 @@ internal fun spokenSeasons(rows: List<SeasonRow>): String {
         }
         "${row.label}: ${runs.joinToString(" and ")}"
     }
-    return "Through the year. ${said.joinToString("; ")}"
+    return said.joinToString("; ")
 }
 
 /** `now` is this month, 0 for January; the website rings the visitor's current month the same way. */

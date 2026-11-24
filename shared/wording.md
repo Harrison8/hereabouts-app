@@ -32,7 +32,6 @@ Each of these is in the iPhone app's string file and in the Android app's string
 | Tap the save button on any plant to save it here.{reminder} | Garden screen with nothing saved: the same line as it is spoken |
 | Each Saturday at 8:00 you’ll get the week’s garden jobs for the plants you saved. | Settings, under Saturday reminders; also the sentence {reminder} stands for |
 | Browse plants | Garden screen with nothing saved: button |
-| The phone asks if Hereabouts may send reminders when you save your first plant. | Garden screen with nothing saved: note under the button |
 | This week | Garden screen: heading of the week's jobs |
 | {done} of {total} done | Garden screen: how many of this week's jobs are ticked |
 | Nothing to do this week. | Garden screen: when the week has no jobs |
@@ -78,7 +77,7 @@ Each of these is in the iPhone app's string file and in the Android app's string
 | All | Plants screen: chip |
 | Search {n} plants | Plants screen: search box |
 | Sort | Plants screen: spoken name of the sort menu |
-| No signal. Every plant and photo still works. Seller links open once you have signal again. | Plants screen and Where to buy sheet: banner when the phone has no signal |
+| No signal. Seller links open once you have signal again. | Plants screen and Where to buy sheet: banner when the phone has no signal |
 | Your location | Settings: group name |
 | Change | Settings: button beside the county |
 | Reminders | Settings: group name |
@@ -100,7 +99,6 @@ In the iPhone app's string file only. Each follows how that phone works.
 | Words | Where they appear |
 |---|---|
 | Cancel | Change location sheet: button |
-| Shows when and how to do it | Garden screen: spoken hint on a job row |
 
 ## Android only
 
@@ -143,7 +141,7 @@ These words are put together in the apps' code, not read from a string file. Mos
 | Pick up · {miles} mi · {place} | Where to buy sheet: line under a nearby seller (from the website) |
 | None has a shop near you. | Where to buy sheet: summary (from the website) |
 | The shaded parts of this map of the lower 48 states are where {plant} grows wild. | Plant page: spoken description of the range map (from the website) |
-| Through the year. {months} | Plant page: spoken description of the month chart (from the website) |
+| {months} | Plant page: spoken description of the month chart (from the website) |
 | {type} · {Native or Not native} to {county}, {state} | Plant page: line under the Latin name (from the website) |
 | In bloom | Plant page: season over a photo (from the website) |
 | In fruit | Plant page: season over a photo (from the website) |
@@ -241,4 +239,4 @@ These words are put together in the apps' code, not read from a string file. Mos
 
 | Words | Where they appear |
 |---|---|
-| Hereabouts finds your county from your location on this phone and never sends your location anywhere. | The question the iPhone asks before it gives the app your location (`NSLocationWhenInUseUsageDescription` in Info.plist). Android shows its own system question. |
+| Hereabouts finds your county from your location on this phone. The location itself never leaves the phone. | The question the iPhone asks before it gives the app your location (`NSLocationWhenInUseUsageDescription` in Info.plist). Android shows its own system question. |

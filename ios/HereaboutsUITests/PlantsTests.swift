@@ -330,7 +330,7 @@ final class PlantsTests: XCTestCase {
         let app = launch(offline: true)
         let banner = app.staticTexts["offlineBanner"]
         XCTAssertTrue(banner.waitForExistence(timeout: 10), "No banner with no signal")
-        XCTAssertEqual(banner.label, "No signal. Every plant and photo still works. Seller links open once you have signal again.")
+        XCTAssertEqual(banner.label, "No signal. Seller links open once you have signal again.")
         let icon = app.descendants(matching: .any)["no-signal-icon"]
         XCTAssertTrue(icon.exists, "No no-signal icon at the start of the banner")
         XCTAssertLessThanOrEqual(icon.frame.maxX, banner.frame.minX + 1, "The no-signal icon is not before the words")

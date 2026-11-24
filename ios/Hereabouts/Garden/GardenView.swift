@@ -105,11 +105,6 @@ struct GardenView: View {
             .buttonStyle(.plain)
             .accessibilityIdentifier("browsePlants")
             .padding(.top, 8)
-            if model.notificationPermission == .notAsked {
-                Text("The phone asks if Hereabouts may send reminders when you save your first plant.")
-                    .font(.body(15, .regular, relativeTo: .subheadline))
-                    .foregroundStyle(Theme.inkSoft)
-            }
         }
         .multilineTextAlignment(.center)
         .fixedSize(horizontal: false, vertical: true)
@@ -217,7 +212,6 @@ struct GardenView: View {
             .buttonStyle(.plain)
             .accessibilityElement(children: .ignore)
             .accessibilityLabel(subline.isEmpty ? row.heading : "\(row.heading), \(subline)")
-            .accessibilityHint("Shows when and how to do it")
             .accessibilityAddTraits(.isButton)
             .accessibilityIdentifier("job-\(row.id)")
         }

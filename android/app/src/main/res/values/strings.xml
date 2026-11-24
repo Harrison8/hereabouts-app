@@ -24,7 +24,6 @@
     <string name="garden_empty_tap_spoken">Tap the save button on any plant to save it here.%1$s</string>
     <string name="reminder_sentence">Each Saturday at 8:00 you’ll get the week’s garden jobs for the plants you saved.</string>
     <string name="browse_plants">Browse plants</string>
-    <string name="garden_ask_permission">The phone asks if Hereabouts may send reminders when you save your first plant.</string>
     <string name="this_week">This week</string>
     <string name="done_count">%1$d of %2$d done</string>
     <string name="nothing_this_week_full">Nothing to do this week.</string>
@@ -70,7 +69,7 @@
     <string name="all">All</string>
     <string name="search_plants">Search %1$d plants</string>
     <string name="sort">Sort</string>
-    <string name="no_signal">No signal. Every plant and photo still works. Seller links open once you have signal again.</string>
+    <string name="no_signal">No signal. Seller links open once you have signal again.</string>
     <string name="your_location">Your location</string>
     <string name="change">Change</string>
     <string name="reminders">Reminders</string>

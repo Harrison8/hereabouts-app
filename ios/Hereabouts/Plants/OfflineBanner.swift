@@ -10,7 +10,7 @@ struct OfflineBanner: View {
                 .font(.body(14, .regular, relativeTo: .footnote))
                 .foregroundStyle(Theme.ink)
                 .decorativeIcon("no-signal-icon")
-            Text("No signal. Every plant and photo still works. Seller links open once you have signal again.")
+            Text("No signal. Seller links open once you have signal again.")
                 .font(.body(14, .regular, relativeTo: .footnote))
                 .foregroundStyle(Theme.ink)
                 .fixedSize(horizontal: false, vertical: true)

@@ -69,7 +69,6 @@ import garden.hereabouts.app.R
 import garden.hereabouts.app.TicksStore
 import garden.hereabouts.app.YoungSerif
 import garden.hereabouts.app.plants.isLargeText
-import garden.hereabouts.app.reminders.NotificationPermission
 import garden.hereabouts.core.Location
 
 internal val TitleStyle = TextStyle(fontFamily = YoungSerif, fontSize = 22.sp, lineHeight = 28.sp, color = Brand.ink)
@@ -108,7 +107,7 @@ fun GardenScreen(
     Column(Modifier.fillMaxSize().background(Brand.surface).verticalScroll(scroll).padding(bottom = 24.dp)) {
         location?.let { CountyRow(it) } ?: Spacer(Modifier.height(4.dp))
         if (week.savedPlants.isEmpty()) {
-            EmptyState(willCome, permission == NotificationPermission.NotAsked, onBrowsePlants)
+            EmptyState(willCome, onBrowsePlants)
         } else {
             ThisWeek(week, ticked, willCome, toggle = { model.toggleTick(it, today) }, open = { onOpenJob(it) })
             SavedGrid(
@@ -144,7 +143,7 @@ private fun CountyRow(location: Location) {
 }
 
 @Composable
-private fun EmptyState(willCome: Boolean, notAsked: Boolean, onBrowsePlants: () -> Unit) {
+private fun EmptyState(willCome: Boolean, onBrowsePlants: () -> Unit) {
     Column(
         Modifier.fillMaxWidth().padding(start = 32.dp, end = 32.dp, top = 96.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -192,13 +191,6 @@ private fun EmptyState(willCome: Boolean, notAsked: Boolean, onBrowsePlants: () 
             contentAlignment = Alignment.Center,
         ) {
             Text(stringResource(R.string.browse_plants), style = BodyStyle.copy(color = Color.White, fontWeight = FontWeight.SemiBold))
-        }
-        if (notAsked) {
-            Text(
-                stringResource(R.string.garden_ask_permission),
-                style = SmallStyle,
-                textAlign = TextAlign.Center,
-            )
         }
     }
 }
