@@ -48,7 +48,7 @@ final class FirstOpenUnitTests: XCTestCase {
             await FirstOpenLookup.text(text, tables: t, address: offline)
         }
         var outcome = await run("   ")
-        XCTAssertEqual(message(outcome), "Type your city, county or ZIP code first.")
+        XCTAssertEqual(message(outcome), "Type your city, county, or ZIP code first.")
         outcome = await run("Dayton, OH")
         XCTAssertEqual(county(outcome), "Montgomery County, Ohio")
         // The website's method values: the kind of place found, "city" or "county".
@@ -62,7 +62,7 @@ final class FirstOpenUnitTests: XCTestCase {
         outcome = await run("99501")
         XCTAssertEqual(message(outcome), "We only cover the lower 48 states for now.")
         outcome = await run("Ohio")
-        XCTAssertEqual(message(outcome), "Ohio contains several different ecoregions. Type a city, county or ZIP code.")
+        XCTAssertEqual(message(outcome), "Ohio contains several different ecoregions. Type a city, county, or ZIP code.")
         outcome = await run("Alaska")
         XCTAssertEqual(message(outcome), "We only cover the lower 48 states for now.")
         outcome = await run("Springfield")

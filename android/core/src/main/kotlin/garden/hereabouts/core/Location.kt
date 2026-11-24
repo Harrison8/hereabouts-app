@@ -430,8 +430,8 @@ object LocationLookup {
     fun stateMessage(code: String): String {
         val name = stateName(code) ?: "undefined"
         if (code in outsideUs48States) return "We only cover the lower 48 states for now."
-        if (code in oneEcoregionStates) return "Type a city, county or ZIP code in $name."
-        return "$name contains several different ecoregions. Type a city, county or ZIP code."
+        if (code in oneEcoregionStates) return "Type a city, county, or ZIP code in $name."
+        return "$name contains several different ecoregions. Type a city, county, or ZIP code."
     }
 
     /** ambiguousMessage: the message for a city name that several states share. */

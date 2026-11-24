@@ -73,10 +73,10 @@ public enum Reminders {
         return "\(c.year ?? 0)-\(pad(c.month ?? 0))-\(pad(c.day ?? 0))"
     }
 
-    /// joinNames: "a", "a and b", "a, b and c".
+    /// joinNames: "a", "a and b", "a, b, and c".
     static func joinNames(_ names: [String]) -> String {
-        if names.count <= 1 { return names.joined() }
-        return names.dropLast().joined(separator: ", ") + " and " + names[names.count - 1]
+        if names.count < 3 { return names.joined(separator: " and ") }
+        return names.dropLast().joined(separator: ", ") + ", and " + names[names.count - 1]
     }
 
     /// reminderBody: one line per job, "<heading>: your <plants>.", with the plants' common names in lower case. A

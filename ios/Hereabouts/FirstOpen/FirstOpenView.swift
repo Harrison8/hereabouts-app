@@ -23,7 +23,7 @@ enum FirstOpenLookup {
         case message(String)
     }
 
-    static let emptyMessage = "Type your city, county or ZIP code first."
+    static let emptyMessage = "Type your city, county, or ZIP code first."
     static let outsideMessage = "We only cover the lower 48 states for now."
     static let placeNotFoundMessage = "We couldn't find that place. Try your ZIP code, or a city and state like Dayton, OH."
     static let noMatchMessage = "We couldn't match that address. Try your 5-digit ZIP code instead."

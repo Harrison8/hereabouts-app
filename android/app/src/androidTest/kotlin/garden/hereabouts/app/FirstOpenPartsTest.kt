@@ -65,7 +65,7 @@ class FirstOpenPartsTest {
         val offline = AddressLookup(tables, endpoint = "http://127.0.0.1:9/none")
         suspend fun run(text: String) = FirstOpenLookup.text(text, tables, offline)
 
-        assertEquals("Type your city, county or ZIP code first.", message(run("   ")))
+        assertEquals("Type your city, county, or ZIP code first.", message(run("   ")))
         var outcome = run("Dayton, OH")
         assertEquals("Montgomery County, Ohio", county(outcome))
         // The website's method values: the kind of place found, "city" or "county".
@@ -77,7 +77,7 @@ class FirstOpenPartsTest {
         assertEquals("Fairfax County, Virginia", county(outcome))
         assertEquals("zip", method(outcome))
         assertEquals("We only cover the lower 48 states for now.", message(run("99501")))
-        assertEquals("Ohio contains several different ecoregions. Type a city, county or ZIP code.", message(run("Ohio")))
+        assertEquals("Ohio contains several different ecoregions. Type a city, county, or ZIP code.", message(run("Ohio")))
         assertEquals("We only cover the lower 48 states for now.", message(run("Alaska")))
         assertEquals(
             "There's a Springfield in more than one state. Add the state, like Springfield, MO.",

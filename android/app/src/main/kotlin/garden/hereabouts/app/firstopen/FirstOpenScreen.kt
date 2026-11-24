@@ -117,7 +117,7 @@ object FirstOpenLookup {
         data class Message(val text: String) : Outcome
     }
 
-    const val EMPTY_MESSAGE = "Type your city, county or ZIP code first."
+    const val EMPTY_MESSAGE = "Type your city, county, or ZIP code first."
     const val OUTSIDE_MESSAGE = "We only cover the lower 48 states for now."
     const val PLACE_NOT_FOUND_MESSAGE =
         "We couldn't find that place. Try your ZIP code, or a city and state like Dayton, OH."

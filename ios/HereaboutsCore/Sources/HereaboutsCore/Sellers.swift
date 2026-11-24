@@ -84,16 +84,16 @@ public enum Sellers {
         LocationLookup.distanceMi((lat: a.0, lon: a.1), (lat: b.0, lon: b.1))
     }
 
-    /// joinStates: "KY, OH and TN", a short list joined the way a person writes it.
+    /// joinStates: "KY and OH", "KY, OH, and TN", a short list joined the way a person writes it, with an Oxford comma.
     static func joinStates(_ codes: [String]) -> String {
         // [...codes].sort(): JavaScript sorts by UTF-16 code unit; for two-letter postal codes that is plain byte order.
         let list = codes.sorted { Array($0.utf16).lexicographicallyPrecedes(Array($1.utf16)) }
-        if list.count < 2 { return list.joined() }
-        return list.dropLast().joined(separator: ", ") + " and " + list[list.count - 1]
+        if list.count < 3 { return list.joined(separator: " and ") }
+        return list.dropLast().joined(separator: ", ") + ", and " + list[list.count - 1]
     }
 
     /// shipsSummary: where a seller sends this kind of plant, for a visitor who has not given a location yet:
-    /// "Ships to the lower 48 states", "Ships to the lower 48 except CA", "Ships to KY, OH and TN", "Ships to 35 states".
+    /// "Ships to the lower 48 states", "Ships to the lower 48 except CA", "Ships to KY, OH, and TN", "Ships to 35 states".
     /// A seller with a shop adds " · Shop in Goshen, KY"; one that does not ship this kind of plant but has a shop says
     /// "Pick up only · Goshen, KY". Empty when nothing is known. When the plant's own listing has a list of states,
     /// that list is used instead of the seller's area (an empty list too).

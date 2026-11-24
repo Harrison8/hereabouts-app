@@ -165,10 +165,10 @@ class GardenWeek(
             return "$name ${dayOfYear - monthStart[month]}"
         }
 
-        /** "a", "a and b", "a, b and c". */
+        /** "a", "a and b", "a, b, and c". */
         fun joined(names: List<String>): String {
-            if (names.size <= 1) return names.joinToString("")
-            return names.dropLast(1).joinToString(", ") + " and " + names.last()
+            if (names.size < 3) return names.joinToString(" and ")
+            return names.dropLast(1).joinToString(", ") + ", and " + names.last()
         }
 
         private val anchorNames = mapOf(

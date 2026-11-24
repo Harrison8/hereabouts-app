@@ -48,10 +48,10 @@ object Reminders {
     private fun localDate(at: ZonedDateTime): String =
         at.year.toString() + "-" + at.monthValue.toString().padStart(2, '0') + "-" + at.dayOfMonth.toString().padStart(2, '0')
 
-    /** joinNames: "a", "a and b", "a, b and c". */
+    /** joinNames: "a", "a and b", "a, b, and c". */
     private fun joinNames(names: List<String>): String {
-        if (names.size <= 1) return names.joinToString("")
-        return names.dropLast(1).joinToString(", ") + " and " + names.last()
+        if (names.size < 3) return names.joinToString(" and ")
+        return names.dropLast(1).joinToString(", ") + ", and " + names.last()
     }
 
     /**

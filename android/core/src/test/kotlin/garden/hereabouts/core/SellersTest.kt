@@ -148,7 +148,7 @@ class SellersTest {
     @Test
     fun shipsSummaryWording() {
         val v = Vendor(name = "S", location = "Goshen, KY", storefront = true, shipsTo = ShipsTo.States(listOf("TN", "KY", "OH")))
-        assertEquals("Ships to KY, OH and TN · Shop in Goshen, KY", Sellers.shipsSummary(v, "tree", null))
+        assertEquals("Ships to KY, OH, and TN · Shop in Goshen, KY", Sellers.shipsSummary(v, "tree", null))
         assertEquals("Pick up only · Goshen, KY", Sellers.shipsSummary(v.copy(shipsExcept = listOf("tree")), "tree", null))
         assertEquals("", Sellers.shipsSummary(Vendor(name = "S"), "tree", null))
         assertEquals("Ships to the lower 48 except CA", Sellers.shipsSummary(Vendor(name = "S", shipsTo = ShipsTo.AllExcept(listOf("CA"))), "tree", null))

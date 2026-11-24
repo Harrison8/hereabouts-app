@@ -112,7 +112,7 @@ These words are put together in the apps' code, not read from a string file. Mos
 
 | Words | Where they appear |
 |---|---|
-| Type your city, county or ZIP code first. | First screen: message (from the website) |
+| Type your city, county, or ZIP code first. | First screen: message (from the website) |
 | We only cover the lower 48 states for now. | First screen: message (from the website) |
 | We couldn't find that place. Try your ZIP code, or a city and state like Dayton, OH. | First screen: message (from the website) |
 | We couldn't match that address. Try your 5-digit ZIP code instead. | First screen: message (from the website) |
@@ -156,8 +156,8 @@ These words are put together in the apps' code, not read from a string file. Mos
 | {job}: your {plants}. | Saturday reminder: the body, one line for each job that applies to a saved plant (from the website) |
 | We have {n} plants for your area so far. | Plants screen: line above the list for a region the site does not serve yet (from the website) |
 | None of our plants are recorded as native to {region} yet. | Plants screen: line above the list when no plant is native to the county (from the website) |
-| Type a city, county or ZIP code in {state}. | First screen: message when a state name is typed (from the website) |
-| {state} contains several different ecoregions. Type a city, county or ZIP code. | First screen: message when a state name is typed (from the website) |
+| Type a city, county, or ZIP code in {state}. | First screen: message when a state name is typed (from the website) |
+| {state} contains several different ecoregions. Type a city, county, or ZIP code. | First screen: message when a state name is typed (from the website) |
 | There's a {place} in more than one state. Add the state, like {place}, {state}. | First screen: message when a city name is shared by several states (from the website) |
 | {season} · {n} of {total} | Plant page: counter under the photos |
 | {county}, {state} is marked with a dot. | Plant page: second sentence of the spoken description of the range map (from the website) |

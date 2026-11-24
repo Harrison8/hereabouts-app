@@ -460,8 +460,8 @@ public enum LocationLookup {
     public static func stateMessage(_ code: String) -> String {
         let name = stateName(code) ?? "undefined"
         if outsideUS48States.contains(code) { return "We only cover the lower 48 states for now." }
-        if oneEcoregionStates.contains(code) { return "Type a city, county or ZIP code in \(name)." }
-        return "\(name) contains several different ecoregions. Type a city, county or ZIP code."
+        if oneEcoregionStates.contains(code) { return "Type a city, county, or ZIP code in \(name)." }
+        return "\(name) contains several different ecoregions. Type a city, county, or ZIP code."
     }
 
     /// ambiguousMessage: the message for a city name that several states share.
