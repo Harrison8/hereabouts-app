@@ -19,8 +19,6 @@ Each of these is in the iPhone app's string file and in the Android app's string
 | Photo credits and licenses | Settings row and the title of its page |
 | Native plants\nfor your county | First screen: the title |
 | Native plants for your county | First screen: the title as it is spoken |
-| Enter your ZIP code to see the plants that grow wild where you live. | First screen: the line under the title, ZIP code form |
-| Enter your town or street address to see the plants that grow wild where you live. | First screen: the line under the title, address form |
 | ZIP code | First screen: label and spoken name of the ZIP code box |
 | Town or street address | First screen: label and spoken name of the address box |
 | Looking up… | First screen: while a lookup waits |

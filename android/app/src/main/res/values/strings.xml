@@ -11,8 +11,6 @@
     <string name="photo_credits">Photo credits and licenses</string>
     <string name="first_open_title">Native plants\nfor your county</string>
     <string name="first_open_title_spoken">Native plants for your county</string>
-    <string name="first_open_lede_zip">Enter your ZIP code to see the plants that grow wild where you live.</string>
-    <string name="first_open_lede_address">Enter your town or street address to see the plants that grow wild where you live.</string>
     <string name="zip_code">ZIP code</string>
     <string name="town_or_address">Town or street address</string>
     <string name="looking_up">Looking up…</string>

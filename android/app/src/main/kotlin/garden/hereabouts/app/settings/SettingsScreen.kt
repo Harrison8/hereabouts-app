@@ -237,7 +237,7 @@ private fun Page(
 }
 
 /**
- * The first-open screen without its wordmark, title and lede, to choose another county. The back arrow, the phone's
+ * The first-open screen without its wordmark and title, to choose another county. The back arrow, the phone's
  * Back, or leaving the page stops any lookup still waiting, so its answer sets nothing.
  */
 @Composable

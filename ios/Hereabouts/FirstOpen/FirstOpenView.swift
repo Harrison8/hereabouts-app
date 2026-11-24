@@ -2,10 +2,10 @@
 // field with the number pad up, the county found shown under it as the ZIP is typed, and the button pinned above the
 // keyboard. The two links for a town or street address, or the phone's own location, are pinned under the button, so
 // both can be tapped while the number pad is up. Everything above the button scrolls, and the field and the county
-// found are scrolled into view as the keyboard comes up. The lede is left out while the number pad leaves no room for
-// it. At the largest text sizes the button and links would leave no room for the field, so they follow the county in
-// the scroll area instead. Text follows the phone's text size at every size.
-// Settings opens the same screen in a sheet titled "Change location", without the wordmark, title or lede.
+// found are scrolled into view as the keyboard comes up. At the largest text sizes the button and links would leave no
+// room for the field, so they follow the county in the scroll area instead. Text follows the phone's text size at every
+// size. The line that sat under the title was cut on 11-23: the title, the field's label and the button say it.
+// Settings opens the same screen in a sheet titled "Change location", without the wordmark or title.
 //
 // Everything is looked up on the phone from the tables the app ships with, apart from a street address, which goes to
 // the Census Bureau's address finder as on the website. The county is set only when the button is tapped. The
@@ -159,8 +159,6 @@ struct FirstOpenView: View {
     @State private var formHeight: CGFloat = 0
     @State private var buttonHeight: CGFloat = 0
     @State private var linksHeight: CGFloat = 0
-    @State private var headerHeight: CGFloat = 0
-    @State private var ledeHeight: CGFloat = 0
 
     /// The button and both links stay pinned above the keyboard while they leave room for the label, the field and the
     /// county. At the largest text sizes they do not, so the two links follow the county in the scroll area instead;
@@ -174,12 +172,6 @@ struct FirstOpenView: View {
 
     /// What the pinned area takes: the button and both links, or the button alone at the largest text sizes.
     private var pinnedNow: CGFloat { pinsActions ? pinnedHeight : buttonHeight + 14 }
-
-    /// The lede is left out while the number pad leaves no room for it above the field. The title always stays.
-    private var showsLede: Bool {
-        let room = screenHeight - pinnedNow - formHeight
-        return screenHeight == 0 || headerHeight + ledeHeight <= room
-    }
 
     /// The number pad's Done is shown at the accessibility text sizes, where the scrolling needs a way to close the pad.
     private var showsDone: Bool { mode == .zip && typeSize.isAccessibilitySize }
@@ -292,41 +284,25 @@ struct FirstOpenView: View {
 
     private var fieldFont: Font { .body(24, .regular, relativeTo: .title2) }
 
-    /// The approved picture's wordmark, title and lede. Tapping them closes the number pad.
+    /// The approved picture's wordmark and title. Tapping them closes the number pad.
     @ViewBuilder
     private var header: some View {
         if !inSheet {
             VStack(alignment: .leading, spacing: 0) {
-                VStack(alignment: .leading, spacing: 0) {
-                    Image("Wordmark")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 168)
-                        .accessibilityLabel("Hereabouts")
-                        .padding(.bottom, 32)
-                    Text("Native plants\nfor your county")
-                        .font(.display(.largeTitle))
-                        .foregroundStyle(Theme.ink)
-                        .fixedSize(horizontal: false, vertical: true)
-                        .accessibilityLabel("Native plants for your county")
-                        .accessibilityAddTraits(.isHeader)
-                }
-                .padding(.top, 32)
-                .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { headerHeight = $0 }
-                // Measured at its full height even while it is left out, so leaving it out cannot change the choice.
-                Text(mode == .zip
-                     ? "Enter your ZIP code to see the plants that grow wild where you live."
-                     : "Enter your town or street address to see the plants that grow wild where you live.")
-                    .font(.body(.body))
-                    .lineSpacing(4)
-                    .foregroundStyle(Theme.inkSoft)
+                Image("Wordmark")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 168)
+                    .accessibilityLabel("Hereabouts")
+                    .padding(.bottom, 32)
+                Text("Native plants\nfor your county")
+                    .font(.display(.largeTitle))
+                    .foregroundStyle(Theme.ink)
                     .fixedSize(horizontal: false, vertical: true)
-                    .padding(.top, 12)
-                    .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { ledeHeight = $0 }
-                    .frame(height: showsLede ? nil : 0, alignment: .top)
-                    .clipped()
-                    .accessibilityHidden(!showsLede)
+                    .accessibilityLabel("Native plants for your county")
+                    .accessibilityAddTraits(.isHeader)
             }
+            .padding(.top, 32)
             .frame(maxWidth: .infinity, alignment: .leading)
             .contentShape(Rectangle())
             .onTapGesture { focus = nil }

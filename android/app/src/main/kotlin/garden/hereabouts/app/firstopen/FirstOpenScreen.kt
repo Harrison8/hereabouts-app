@@ -2,10 +2,10 @@
 // field with the number pad up, the county found shown under it as the ZIP is typed, and the button pinned above the
 // keyboard. The two links for a town or street address, or the phone's own location, are pinned under the button, so
 // both can be tapped while the number pad is up. Everything above the button scrolls, and the county found is scrolled
-// into view as the keyboard comes up. The lede is left out while the number pad leaves no room for it. At the largest
-// text sizes the button and links would leave no room for the field, so they follow the county in the scroll area
-// instead. Text follows the phone's text size at every size.
-// Settings opens the same screen as a page titled "Change location", without the wordmark, title or lede.
+// into view as the keyboard comes up. At the largest text sizes the button and links would leave no room for the field,
+// so they follow the county in the scroll area instead. Text follows the phone's text size at every size. The line that
+// sat under the title was cut on 11-23: the title, the field's label and the button say it.
+// Settings opens the same screen as a page titled "Change location", without the wordmark or title.
 //
 // Everything is looked up on the phone from the tables the app ships with, apart from a street address, which goes to
 // the Census Bureau's address finder as on the website. The county is set only when the button is tapped. The
@@ -72,7 +72,6 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.layout.layout
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
@@ -81,7 +80,6 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
@@ -208,7 +206,7 @@ private val Corner = RoundedCornerShape(4.dp)
 
 /**
  * The first-open screen. `inSheet` is the Change location page, which has its own title bar and gives the screen its
- * room between that bar and the keyboard; there it leaves out the wordmark, title and lede. `onChosen` runs after the
+ * room between that bar and the keyboard; there it leaves out the wordmark and title. `onChosen` runs after the
  * county is set.
  */
 @OptIn(ExperimentalLayoutApi::class)
@@ -245,16 +243,11 @@ fun FirstOpenScreen(model: AppModel, modifier: Modifier = Modifier, inSheet: Boo
     var viewportHeight by remember { mutableIntStateOf(0) }
     var statusAndActionsHeight by remember { mutableIntStateOf(0) }
     var actionsHeight by remember { mutableIntStateOf(0) }
-    var headerHeight by remember { mutableIntStateOf(0) }
-    var ledeHeight by remember { mutableIntStateOf(0) }
 
     // The button and both links stay pinned above the keyboard while they leave room for the label, the field and the
     // county. At the largest text sizes they do not, so they follow the county in the scroll area instead.
     val pinnedHeight = actionsHeight + with(density) { 14.dp.roundToPx() }
     val pinsActions = screenHeight == 0 || pinnedHeight + formHeight + with(density) { 16.dp.roundToPx() } <= screenHeight
-    // The lede is left out while the number pad leaves no room for it above the field. The title always stays.
-    val room = screenHeight - (if (pinsActions) pinnedHeight else 0) - formHeight
-    val showsLede = screenHeight == 0 || headerHeight + ledeHeight <= room
 
     val found = outcome as? FirstOpenLookup.Outcome.Found
 
@@ -386,45 +379,28 @@ fun FirstOpenScreen(model: AppModel, modifier: Modifier = Modifier, inSheet: Boo
                 .padding(horizontal = 24.dp),
         ) {
             if (!inSheet) {
-                // The approved picture's wordmark, title and lede. Tapping them closes the number pad.
-                Column(Modifier.fillMaxWidth().pointerInput(Unit) { detectTapGestures { focusManager.clearFocus() } }) {
-                    Column(Modifier.padding(top = 32.dp).onSizeChanged { headerHeight = it.height }) {
-                        val titleSpoken = stringResource(R.string.first_open_title_spoken)
-                        Image(
-                            painterResource(R.drawable.wordmark),
-                            contentDescription = stringResource(R.string.app_name),
-                            modifier = Modifier.width(168.dp),
-                        )
-                        Spacer(Modifier.height(32.dp))
-                        Text(
-                            stringResource(R.string.first_open_title),
-                            style = TextStyle(fontFamily = YoungSerif, fontSize = 34.sp, lineHeight = 41.sp),
-                            color = Brand.ink,
-                            modifier = Modifier.semantics {
-                                contentDescription = titleSpoken
-                                heading()
-                            },
-                        )
-                    }
+                // The approved picture's wordmark and title. Tapping them closes the number pad.
+                Column(
+                    Modifier
+                        .fillMaxWidth()
+                        .pointerInput(Unit) { detectTapGestures { focusManager.clearFocus() } }
+                        .padding(top = 32.dp),
+                ) {
+                    val titleSpoken = stringResource(R.string.first_open_title_spoken)
+                    Image(
+                        painterResource(R.drawable.wordmark),
+                        contentDescription = stringResource(R.string.app_name),
+                        modifier = Modifier.width(168.dp),
+                    )
+                    Spacer(Modifier.height(32.dp))
                     Text(
-                        stringResource(if (mode == Mode.Zip) R.string.first_open_lede_zip else R.string.first_open_lede_address),
-                        style = BodyText.copy(lineHeight = 26.sp),
-                        color = Brand.inkSoft,
-                        modifier = Modifier
-                            // Measured at its full height even while it is left out, so leaving it out cannot change
-                            // the choice.
-                            .then(
-                                if (showsLede) {
-                                    Modifier
-                                } else {
-                                    Modifier.clearAndSetSemantics {}.layout { measurable, constraints ->
-                                        val placeable = measurable.measure(constraints)
-                                        layout(placeable.width, 0) {}
-                                    }
-                                },
-                            )
-                            .onSizeChanged { ledeHeight = it.height }
-                            .padding(top = 12.dp),
+                        stringResource(R.string.first_open_title),
+                        style = TextStyle(fontFamily = YoungSerif, fontSize = 34.sp, lineHeight = 41.sp),
+                        color = Brand.ink,
+                        modifier = Modifier.semantics {
+                            contentDescription = titleSpoken
+                            heading()
+                        },
                     )
                 }
             }
