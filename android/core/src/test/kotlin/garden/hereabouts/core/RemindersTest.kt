@@ -131,7 +131,7 @@ class RemindersTest {
             job("Three", null, listOf("a-plant", "b-plant", "Z-plant")), job("Four", "", listOf("nope")),
             job("Five", "", listOf("oak", "a-plant")),
         )
-        assertEquals("One: your aster.\nThree: your aster, bee balm and zed.\nFive: your oak and aster.", Reminders.body(jobs, plants))
+        assertEquals("One: your aster.\nThree: your aster, bee balm, and zed.\nFive: your oak and aster.", Reminders.body(jobs, plants))
         assertEquals("This week in your garden", Reminders.TITLE)
     }
 }

@@ -26,6 +26,11 @@ targets:
     platform: iOS
     sources:
       - path: Hereabouts
+        # The privacy manifest is listed on its own below, so it is certain to be copied into the app as a resource.
+        excludes:
+          - Resources/PrivacyInfo.xcprivacy
+      - path: Hereabouts/Resources/PrivacyInfo.xcprivacy
+        buildPhase: resources
       # The shared data bundle, copied into the app as bundle/. Each folder is listed on its own so that
       # bundle/expected/, the expected answers that only the tests read, never ships in the app.
       - path: ../shared/bundle/data

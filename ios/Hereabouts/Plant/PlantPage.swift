@@ -35,7 +35,7 @@ struct PlantPage: View {
                             .padding(.top, 24)
                     }
                     heading("Through the year")
-                    SeasonChart(plant: plant)
+                    SeasonChart(plant: plant, now: Calendar.current.component(.month, from: model.now) - 1)
                     if !(facts.flowers.isEmpty && facts.more.isEmpty) {
                         FactList(facts: facts.flowers + facts.more)
                             .padding(.top, 24)

@@ -1,0 +1,12 @@
+Hereabouts shows which plants are native to the user's county, anywhere in the lower 48 US states, and where to buy them. No account is needed.
+
+To try it, enter the ZIP code 40202 (Louisville, Kentucky) on the first screen, or tap "Use my location".
+
+What the app does on the phone:
+- Plants: the trees, shrubs, wildflowers, grasses, and ferns native to that county, with filters for sun, soil moisture, and height. Each plant page has photos, a month-by-month chart of when it is in leaf and in bloom, and care notes.
+- Garden: tap Save on any plant page. The Garden tab lists the saved plants and this week's care jobs for them, which can be ticked off. If the user allows notifications, a reminder comes each Saturday at 8:00 naming that week's jobs. The reminders are scheduled on the phone. There is no server push.
+- No signal: every plant, every photo, and the Garden work offline. The plant data and photos ship inside the app.
+
+Where to buy: each plant page has a "Where to buy" button listing local nurseries and online sellers. Seller links open in Safari. Some are affiliate links to sellers of physical plants. The app itself sells nothing and has no in-app purchases, ads, or accounts.
+
+Location: the app asks for location only when the user taps "Use my location", and only while the app is open. The phone turns the position into a county. The position is not sent anywhere.

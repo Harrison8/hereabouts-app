@@ -122,7 +122,7 @@ final class RemindersTests: XCTestCase {
             job("Four", "", ["nope"]), job("Five", "", ["oak", "a-plant"]),
         ]
         XCTAssertEqual(Reminders.body(jobs: jobs, plants: plants),
-                       "One: your aster.\nThree: your aster, bee balm and zed.\nFive: your oak and aster.")
+                       "One: your aster.\nThree: your aster, bee balm, and zed.\nFive: your oak and aster.")
         XCTAssertEqual(Reminders.title, "This week in your garden")
     }
 }
